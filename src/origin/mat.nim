@@ -602,7 +602,7 @@ proc translation*(m: Mat3): Vec2 {.inline.} =
 
 proc `translation=`*(o: var Mat3; m: Mat3; v: Vec2) {.inline.} =
   ## Set the translation components of the 3x3 matrix `m` from the vector `v`, storing the result in
-  ## the output matrix `o`
+  ## the output matrix `o`.
   o.copyRotation(m)
   o.m02 = v.x
   o.m12 = v.y
@@ -890,9 +890,9 @@ proc rotate*(o: var Mat4; m: Mat4; v: Vec3; space: Space = Space.local) =
   o.`rotation=`(outMat3)
 
 proc rotate*(m: Mat4; v: Vec3; space: Space = Space.local): Mat4 {.inline.} =
-  ## Rotate the matrix `m` by the vector of Euler angles `v`, storing the result in a new
-  ## matrix. `space` can be set to `Space.local` or `Space.world` to perform the rotation in
-  ## local or world space.
+  ## Rotate the matrix `m` by the vector of Euler angles `v`, storing the result in a new matrix.
+  ## `space` can be set to `Space.local` or `Space.world` to perform the rotation in local or world
+  ## space.
   result = m
   result.rotate(m, v, space)
 
@@ -931,7 +931,7 @@ proc translation*(m: Mat4): Vec3 {.inline.} =
 
 proc `translation=`*(o: var Mat4; m: Mat4; v: Vec3) {.inline.} =
   ## Set the translation components of the 4x4 matrix `m` from the vector `v`, storing the result in
-  ## the output matrix `o`
+  ## the output matrix `o`.
   o.copyRotation(m)
   o.m03 = v.x
   o.m13 = v.y
@@ -969,8 +969,8 @@ proc translate*(m: Mat4; v: Vec3): Mat4 {.inline.} =
   result.translate(m, v)
 
 proc scale*(o: var Vec3; m: Mat4) {.inline.} =
-  ## Extract the 3D scale vector from the 4x4 matrix `m`, storing the result in the output
-  ## vector `o`.
+  ## Extract the 3D scale vector from the 4x4 matrix `m`, storing the result in the output vector
+  ## `o`.
   o.x = m.rotation(Axis3d.X).len
   o.y = m.rotation(Axis3d.Y).len
   o.z = m.rotation(Axis3d.Z).len
@@ -1160,11 +1160,11 @@ proc invert*(o: var Mat4; m: Mat4) =
            m.m00 * m.m12 * m.m21 - m.m01 * m.m10 * m.m22 - m.m02 * m.m11 * m.m20) / det
 
 proc invert*(m: Mat4): Mat4 {.inline.} =
-  ## Invert the 4x4 m.m00trix `m`, storing the result in a new m.m00trix.
+  ## Invert the 4x4 m.m00trix `m`, storing the result in a new matrix.
   result.invert(m)
 
 proc lookAt*(o: var Mat4; eye, target, up: Vec3) =
-  ## Construct a 4x4 view matrix, storing the result in the output matrix `o`
+  ## Construct a 4x4 view matrix, storing the result in the output matrix `o`.
   let
     a = normalize(target-eye)
     b = vec3(a.y * up.z - a.z * up.y, a.z * up.x - a.x * up.z, a.x * up.y - a.y * up.x).normalize
