@@ -252,25 +252,25 @@ proc zero*(o: var SomeMat) {.inline.} =
   ## Set all components of the matrix `o` to zero.
   o.fill(0)
 
-proc rand*(o: var SomeMat; range = 0f..1f) {.inline.} =
+proc rand*(o: var SomeMat, range = 0f..1f) {.inline.} =
   ## Randomize the components of the matrix `o` to be within the range `range`, storing the result
   ## in the output matrix `o`.
   for i, _ in o: o[i] = rand(range)
 
-proc rand*[T: SomeMat](t: typedesc[T]; range = 0f..1f): T {.inline.} =
+proc rand*[T: SomeMat](t: typedesc[T], range = 0f..1f): T {.inline.} =
   ## Initialize a new matrix with its components randomized to be within the range `range`.
   result.rand(range)
 
-proc `~=`*(m1, m2: SomeMat; tolerance = 1e-5): bool {.inline.} =
+proc `~=`*(m1, m2: SomeMat, tolerance = 1e-5): bool {.inline.} =
   ## Check if the matrices `m1` and `m2` are approximately equal.
   genComponentWiseBool(`~=`, m1, m2, tolerance)
 
-proc clamp*[T: SomeMat](o: var T; m: T; range = -Inf..Inf) {.inline.} =
+proc clamp*[T: SomeMat](o: var T, m: T, range = -Inf..Inf) {.inline.} =
   ## Constrain each component of the matrix `m` to lie within `range`, storing the result in the
   ## output matrix `o`.
   for i, _ in o: o[i] = m[i].clamp(range.a, range.b)
 
-proc clamp*[T: SomeMat](m: T; range = -Inf..Inf): T {.inline.} =
+proc clamp*[T: SomeMat](m: T, range = -Inf..Inf): T {.inline.} =
   ## Constrain each component of the matrix `m` to lie within `range`, storing the result in a new
   ## matrix.
   result.clamp(m, range)
@@ -279,7 +279,7 @@ proc `+`*[T: SomeMat](a, b: T): T {.inline.} =
   ## Component-wise addition of the matrices `a` and `b`, storing the result in a new matrix.
   for i, _ in a: result[i] = a[i] + b[i]
 
-proc `+=`*[T: SomeMat](o: var T; m: T) {.inline.} =
+proc `+=`*[T: SomeMat](o: var T, m: T) {.inline.} =
   ## Component-wise addition of the matrices `o` and `m`, storing the result in the output matrix
   ## `o`.
   for i, _ in o: o[i] += m[i]
@@ -288,7 +288,7 @@ proc `-`*[T: SomeMat](a, b: T): T {.inline.} =
   ## Component-wise subtraction of the matrices `a` and `b`, storing the result in a new matrix.
   for i, _ in a: result[i] = a[i] - b[i]
 
-proc `-=`*[T: SomeMat](o: var T; m: T) {.inline.} =
+proc `-=`*[T: SomeMat](o: var T, m: T) {.inline.} =
   ## Component-wise subtraction of the matrices `o` and `m`, storing the result in the output matrix
   ## `o`.
   for i, _ in m: o[i] -= m[i]
@@ -316,7 +316,7 @@ proc setId*(o: var Mat2) {.inline.} =
   o.m00 = 1
   o.m11 = 1
 
-proc `*=`*(o: var Mat2; m: Mat2) {.inline.} =
+proc `*=`*(o: var Mat2, m: Mat2) {.inline.} =
   ## Multiply the 2x2 matrices `o` by `m`, storing the result back into the output matrix `o`.
   let
     a = o
@@ -326,19 +326,19 @@ proc `*=`*(o: var Mat2; m: Mat2) {.inline.} =
   o.m01 = a.m00 * b.m01 + a.m01 * b.m11
   o.m11 = a.m10 * b.m01 + a.m11 * b.m11
 
-proc column*(o: var Vec2; m: Mat2; index: range[0..1]) {.inline.} =
+proc column*(o: var Vec2, m: Mat2, index: range[0..1]) {.inline.} =
   ## Extract the 2D column vector at the given `index` from the 2x2 matrix `m`, storing the result
   ## in the output vector `o`.
   case index
   of 0: o[0..1] = m[0..1]
   of 1: o[0..1] = m[2..3]
 
-proc column*(m: Mat2; index: range[0..1]): Vec2 {.inline.} =
+proc column*(m: Mat2, index: range[0..1]): Vec2 {.inline.} =
   ## Extract the 2D column vector at the given `index` from the 2x2 matrix `m`, storing the result
   ## in a new vector.
   result.column(m, index)
 
-proc `column=`*(o: var Mat2; m: Mat2; v: Vec2; index: range[0..1]) {.inline.} =
+proc `column=`*(o: var Mat2, m: Mat2, v: Vec2, index: range[0..1]) {.inline.} =
   ## Set the components of a column at the given `index` of the 2x2 matrix `m` from the vector `v`,
   ## storing the result in the output matrix `o`.
   o = m
@@ -346,37 +346,37 @@ proc `column=`*(o: var Mat2; m: Mat2; v: Vec2; index: range[0..1]) {.inline.} =
   of 0: o[0..1] = v[0..1]
   of 1: o[2..3] = v[0..1]
 
-proc `column=`*(m: Mat2; v: Vec2; index: range[0..1]): Mat2 {.inline.} =
+proc `column=`*(m: Mat2, v: Vec2, index: range[0..1]): Mat2 {.inline.} =
   ## Set the components of a column at the given `index` of the 2x2 matrix `m` from the vector `v`,
   ## storing the result in a new matrix.
   result.`column=`(m, v, index)
 
-proc rotation*(o: var Vec2; m: Mat2; axis: Axis2d) {.inline.} =
+proc rotation*(o: var Vec2, m: Mat2, axis: Axis2d) {.inline.} =
   ## Extract the 2D rotation along `axis` from the 2x2 matrix `m`, storing the result in the output
   ## vector `o`.
   case axis
   of Axis2d.X: o[0..1] = m[0..1]
   of Axis2d.Y: o[0..1] = m[2..3]
 
-proc rotation*(m: Mat2; axis: Axis2d): Vec2 {.inline.} =
+proc rotation*(m: Mat2, axis: Axis2d): Vec2 {.inline.} =
   ## Extract the 2D rotation along `axis` from the 2x2 matrix `m`, storing the result in a new
   ## vector.
   result.rotation(m, axis)
 
-proc `rotation=`*(o: var Mat2; v: Vec2; axis: Axis2d) {.inline.} =
+proc `rotation=`*(o: var Mat2, v: Vec2, axis: Axis2d) {.inline.} =
   ## Set the rotation components along `axis` of the 2x2 matrix `m` from the 2D vector `v`, storing
   ## the result in the output matrix `o`.
   case axis
   of Axis2d.X: o[0..1] = v[0..1]
   of Axis2d.Y: o[2..3] = v[0..1]
 
-proc `rotation=`*(m: Mat2; v: Vec2; axis: Axis2d): Mat2 {.inline.} =
+proc `rotation=`*(m: Mat2, v: Vec2, axis: Axis2d): Mat2 {.inline.} =
   ## Set the rotation components along `axis` of the 2x2 matrix `m` from the 2D vector `v`, storing
   ## the result in a new matrix.
   result = m
   result.`rotation=`(v, axis)
 
-proc rotate*(o: var Mat2; m: Mat2; angle: float32; space: Space = Space.local) {.inline.} =
+proc rotate*(o: var Mat2, m: Mat2, angle: float32, space: Space = Space.local) {.inline.} =
   ## Rotate the 2x2 matrix `m` by `angle`, storing the result in the output matrix `o`. `space` can
   ## be set to `Space.local` or `Space.world` to perform the rotation in local or world space.
   let
@@ -387,13 +387,13 @@ proc rotate*(o: var Mat2; m: Mat2; angle: float32; space: Space = Space.local) {
     of Space.local: o = o * t
     of Space.world: o = t * o
 
-proc rotate*(m: Mat2; angle: float32; space: Space = Space.local): Mat2 {.inline.} =
+proc rotate*(m: Mat2, angle: float32, space: Space = Space.local): Mat2 {.inline.} =
   ## Rotate the 2x2 matrix `m` by 'angle`, storing the result in a new matrix. `space` can be set to
   ## `Space.local` or `Space.world` to perform the rotation in local or world space.
   result = m
   result.rotate(m, angle, space)
 
-proc transpose*(o: var Mat2; m: Mat2) {.inline.} =
+proc transpose*(o: var Mat2, m: Mat2) {.inline.} =
   ## Transpose the 2x2 matrix `m`, storing the result in the output matrix `o`.
   o = m
   swap(o.m10, o.m01)
@@ -414,7 +414,7 @@ proc isDiagonal*(m: Mat2): bool {.inline.} =
   ## Check if the 2x2 matrix `m` is a diagonal matrix.
   m.m10 == 0 and m.m01 == 0 and m.m00 == m.m11
 
-proc mainDiagonal*(o: var Vec2; m: Mat2) {.inline.} =
+proc mainDiagonal*(o: var Vec2, m: Mat2) {.inline.} =
   ## Extract the main diagonal of the 2x2 matrix `m`, storing it in the 2D output vector `o`.
   o.x = m.m00
   o.y = m.m11
@@ -423,7 +423,7 @@ proc mainDiagonal*(m: Mat2): Vec2 {.inline.} =
   ## Extract the main diagonal of the 2x2 matrix `m`, storing it in a new 2D vector.
   result.mainDiagonal(m)
 
-proc antiDiagonal*(o: var Vec2; m: Mat2) {.inline.} =
+proc antiDiagonal*(o: var Vec2, m: Mat2) {.inline.} =
   ## Extract the anti-diagonal of the 2x2 matrix `m`, storing it in the 2D output vector `o`.
   o.x = m.m01
   o.y = m.m10
@@ -441,7 +441,7 @@ proc setId*(o: var Mat3) {.inline.} =
   o.m11 = 1
   o.m22 = 1
 
-proc `*=`*(o: var Mat3; m: Mat3) {.inline.} =
+proc `*=`*(o: var Mat3, m: Mat3) {.inline.} =
   ## Multiply the 3x3 matrices `o` by `m`, storing the result back into the output matrix `o`.
   let
     a = o
@@ -456,17 +456,17 @@ proc `*=`*(o: var Mat3; m: Mat3) {.inline.} =
   o.m12 = a.m10 * b.m02 + a.m11 * b.m12 + a.m12 * b.m22
   o.m22 = a.m20 * b.m02 + a.m21 * b.m12 + a.m22 * b.m22
 
-proc `*`*(o: var Vec3; m: Mat3; v: Vec3) {.inline.} =
+proc `*`*(o: var Vec3, m: Mat3, v: Vec3) {.inline.} =
   ## Multiply the 3x3 matrix `m` by the 3D vector `v`, storing the result in the output vector `o`.
   o.x = m.m00 * v.x + m.m01 * v.y + m.m02 * v.z
   o.y = m.m10 * v.x + m.m11 * v.y + m.m12 * v.z
   o.z = m.m20 * v.x + m.m21 * v.y + m.m22 * v.z
 
-proc `*`*(m: Mat3; v: Vec3): Vec3 {.inline.} =
+proc `*`*(m: Mat3, v: Vec3): Vec3 {.inline.} =
   ## Multiply the 3x3 matrix `m` by the 3D vector `v`, storing the result in a new vector.
   result.`*`(m, v)
 
-proc column*(o: var Vec3; m: Mat3; index: range[0..2]) {.inline.} =
+proc column*(o: var Vec3, m: Mat3, index: range[0..2]) {.inline.} =
   ## Extract the 3D column vector at the given `index` from the 3x3 matrix `m`, storing the result
   ## in the output vector `o`.
   case index
@@ -474,12 +474,12 @@ proc column*(o: var Vec3; m: Mat3; index: range[0..2]) {.inline.} =
   of 1: o[0..2] = m[3..5]
   of 2: o[0..2] = m[6..8]
 
-proc column*(m: Mat3; index: range[0..2]): Vec3 {.inline.} =
+proc column*(m: Mat3, index: range[0..2]): Vec3 {.inline.} =
   ## Extract the 3D column vector at the given `index` from the 3x3 matrix `m`, storing the result
   ## in a new vector.
   result.column(m, index)
 
-proc `column=`*(o: var Mat3; m: Mat3; v: Vec3; index: range[0..2]) {.inline.} =
+proc `column=`*(o: var Mat3, m: Mat3, v: Vec3, index: range[0..2]) {.inline.} =
   ## Set the components of a column at the given `index` of the 3x3 matrix `m` from the vector `v`,
   ## storing the result in the output matrix `o`.
   o = m
@@ -488,12 +488,12 @@ proc `column=`*(o: var Mat3; m: Mat3; v: Vec3; index: range[0..2]) {.inline.} =
   of 1: o[3..5] = v[0..2]
   of 2: o[6..8] = v[0..2]
 
-proc `column=`*(m: Mat3; v: Vec3; index: range[0..2]): Mat3 {.inline.} =
+proc `column=`*(m: Mat3, v: Vec3, index: range[0..2]): Mat3 {.inline.} =
   ## Set the components of a column at the given `index` of the 3x3 matrix `m` from the vector `v`,
   ## storing the result in a new matrix.
   result.`column=`(m, v, index)
 
-proc copyRotation*(o: var Mat3; m: Mat3) {.inline.} =
+proc copyRotation*(o: var Mat3, m: Mat3) {.inline.} =
   ## Copy the 2x2 rotation portion of the 3x3 matrix `m` into the rotation portion of the 3x3 matrix
   ## `o`.
   o.m00 = m.m00
@@ -507,7 +507,7 @@ proc copyRotation*(m: Mat3): Mat3 {.inline.} =
   result.copyRotation(m)
   result.m22 = 1
 
-proc rotation*(o: var Mat2; m: Mat3) {.inline.} =
+proc rotation*(o: var Mat2, m: Mat3) {.inline.} =
   ## Copy the 2x2 rotation portion of the 3x3 matrix `m` into the 2x2 matrix `o`.
   o.m00 = m.m00
   o.m10 = m.m10
@@ -518,19 +518,19 @@ proc rotation*(m: Mat3): Mat2 {.inline.} =
   ## Copy the 2x2 rotation portion of the 3x3 matrix `m` into a new 2x2 matrix.
   result.rotation(m)
 
-proc rotation*(o: var Vec2; m: Mat3; axis: Axis2d) {.inline.} =
+proc rotation*(o: var Vec2, m: Mat3, axis: Axis2d) {.inline.} =
   ## Extract the 2D rotation along `axis` from the 3x3 matrix `m`, storing the result in the output
   ## vector `o`.
   case axis
   of Axis2d.X: o[0..1] = m[0..1]
   of Axis2d.Y: o[0..1] = m[3..4]
 
-proc rotation*(m: Mat3; axis: Axis2d): Vec2 {.inline.} =
+proc rotation*(m: Mat3, axis: Axis2d): Vec2 {.inline.} =
   ## Extract the 2D rotation along `axis` from the 3x3 matrix `m`, storing the result in a new
   ## vector.
   result.rotation(m, axis)
 
-proc `rotation=`*(o: var Mat3; m: Mat2) {.inline.} =
+proc `rotation=`*(o: var Mat3, m: Mat2) {.inline.} =
   ## Copy the components of the 2x2 matrix `m` into the rotation portion of the 3x3 matrix `o`.
   o.m00 = m.m00
   o.m10 = m.m10
@@ -541,20 +541,20 @@ proc `rotation=`*(m: Mat2): Mat3 {.inline.} =
   ## Copy the components of the 2x2 matrix `m` into the rotation portion of a new 3x3 matrix.
   result.rotation = m
 
-proc `rotation=`*(o: var Mat3; v: Vec2; axis: Axis2d) {.inline.} =
+proc `rotation=`*(o: var Mat3, v: Vec2, axis: Axis2d) {.inline.} =
   ## Set the rotation components along `axis` of the 3x3 matrix `m` from the 2D vector `v`, storing
   ## the result in the output matrix `o`.
   case axis
   of Axis2d.X: o[0..1] = v[0..1]
   of Axis2d.Y: o[3..4] = v[0..1]
 
-proc `rotation=`*(m: Mat3; v: Vec2; axis: Axis2d): Mat3 {.inline.} =
+proc `rotation=`*(m: Mat3, v: Vec2, axis: Axis2d): Mat3 {.inline.} =
   ## Set the rotation components along `axis` of the 3x3 matrix `m` from the 2D vector `v`, storing
   ## the result in a new matrix.
   result = m
   result.`rotation=`(v, axis)
 
-proc rotate*(o: var Mat3; m: Mat3; angle: float32; space: Space = Space.local) =
+proc rotate*(o: var Mat3, m: Mat3, angle: float32, space: Space = Space.local) =
   ## Rotate the 3x3 matrix `m` by `angle`, storing the result in the output matrix `o`. `space` can
   ## be set to `Space.local` or `Space.world` to perform the rotation in local or world space.
   let
@@ -568,13 +568,13 @@ proc rotate*(o: var Mat3; m: Mat3; angle: float32; space: Space = Space.local) =
   o = m
   o.`rotation=`(outMat2)
 
-proc rotate*(m: Mat3; angle: float32; space: Space = Space.local): Mat3 {.inline.} =
+proc rotate*(m: Mat3, angle: float32, space: Space = Space.local): Mat3 {.inline.} =
   ## Rotate the 3x3 matrix `m` by 'angle`, storing the result in a new matrix. `space` can be set to
   ## `Space.local` or `Space.world` to perform the rotation in local or world space.
   result = m
   result.rotate(m, angle, space)
 
-proc normalizeRotation*(o: var Mat3; m: Mat3) {.inline.} =
+proc normalizeRotation*(o: var Mat3, m: Mat3) {.inline.} =
   ## Normalize the columns of the 2x2 rotation portion of the 3x3 matrix `m`, storing the result in
   ## the 3x3 output matrix `o`.
   var
@@ -590,7 +590,7 @@ proc normalizeRotation*(m: Mat3): Mat3 {.inline.} =
   result = m
   result.normalizeRotation(m)
 
-proc translation*(o: var Vec2; m: Mat3) {.inline.} =
+proc translation*(o: var Vec2, m: Mat3) {.inline.} =
   ## Extract the 2D translation vector from the 3x3 matrix `m`, storing the result in the output
   ## vector `o`.
   o.x = m.m02
@@ -600,7 +600,7 @@ proc translation*(m: Mat3): Vec2 {.inline.} =
   ## Extract the 2D translation vector from the 3x3 matrix `m`, storing the result in a new vector.
   result.translation(m)
 
-proc `translation=`*(o: var Mat3; m: Mat3; v: Vec2) {.inline.} =
+proc `translation=`*(o: var Mat3, m: Mat3, v: Vec2) {.inline.} =
   ## Set the translation components of the 3x3 matrix `m` from the vector `v`, storing the result in
   ## the output matrix `o`.
   o.copyRotation(m)
@@ -608,12 +608,12 @@ proc `translation=`*(o: var Mat3; m: Mat3; v: Vec2) {.inline.} =
   o.m12 = v.y
   o.m22 = m.m22
 
-proc `translation=`*(m: Mat3; v: Vec2): Mat3 {.inline.} =
+proc `translation=`*(m: Mat3, v: Vec2): Mat3 {.inline.} =
   ## Set the translation components of the 3x3 matrix `m` from the vector `v`, storing the result in
   ## a new matrix.
   result.`translation=`(m, v)
 
-proc translate*(o: var Mat3; m: Mat3; v: Vec2) {.inline.} =
+proc translate*(o: var Mat3, m: Mat3, v: Vec2) {.inline.} =
   ## Translate the 3x3 matrix `m` by the 2D translation vector `v`, storing the result in the output
   ## matrix `o`.
   o.m00 = m.m00 + m.m20 * v.x
@@ -626,12 +626,12 @@ proc translate*(o: var Mat3; m: Mat3; v: Vec2) {.inline.} =
   o.m12 = m.m12 + m.m22 * v.y
   o.m22 = m.m22
 
-proc translate*(m: Mat3; v: Vec2): Mat3 {.inline.} =
+proc translate*(m: Mat3, v: Vec2): Mat3 {.inline.} =
   ## Translate the 3x3 matrix `m` by the 2D translation vector `v`, storing the result in a new
   ## matrix.
   result.translate(m, v)
 
-proc scale*(o: var Vec2; m: Mat3) {.inline.} =
+proc scale*(o: var Vec2, m: Mat3) {.inline.} =
   ## Extract the 2D scale vector from the 3x3 matrix `m`, storing the result in the output
   ## vector `o`.
   o.x = m.rotation(Axis2d.X).len
@@ -641,18 +641,18 @@ proc scale*(m: Mat3): Vec2 {.inline.} =
   ## Extract the 2D scale vector from the 3x3 matrix `m`, storing the result in a new vector.
   result.scale(m)
 
-proc `scale=`*(o: var Mat3; m: Mat3; v: Vec2) {.inline.} =
+proc `scale=`*(o: var Mat3, m: Mat3, v: Vec2) {.inline.} =
   ## Set the scale of the 3x3 matrix `m` from the 2D vector `v`, storing the result in the output
   ## matrix `o`.
   o = m
   o.m00 = v.x
   o.m11 = v.y
 
-proc `scale=`*(m: Mat3; v: Vec2): Mat3 {.inline.} =
+proc `scale=`*(m: Mat3, v: Vec2): Mat3 {.inline.} =
   ## Set the scale of the 3x3 matrix `m` from the 2D vector `v`, storing the result in a new matrix.
   result.`scale=`(m, v)
 
-proc scale*(o: var Mat3; m: Mat3; v: Vec2) {.inline.} =
+proc scale*(o: var Mat3, m: Mat3, v: Vec2) {.inline.} =
   ## Scale the 3x3 matrix `m` by the 2D vector `v`, storing the result in the output matrix `o`.
   o.m00 = m.m00 * v.x
   o.m10 = m.m10 * v.y
@@ -664,11 +664,11 @@ proc scale*(o: var Mat3; m: Mat3; v: Vec2) {.inline.} =
   o.m12 = m.m12 * v.y
   o.m22 = m.m22
 
-proc scale*(m: Mat3; v: Vec2): Mat3 {.inline.} =
+proc scale*(m: Mat3, v: Vec2): Mat3 {.inline.} =
   ## Scale the 3x3 matrix `m` by the 2D vector `v`, storing the result in a new matrix.
   result.scale(m, v)
 
-proc transpose*(o: var Mat3; m: Mat3) {.inline.} =
+proc transpose*(o: var Mat3, m: Mat3) {.inline.} =
   ## Transpose the 3x3 matrix `m`, storing the result in the output matrix `o`.
   o = m
   swap(o.m10, o.m01)
@@ -693,7 +693,7 @@ proc isDiagonal*(m: Mat3): bool {.inline.} =
   m.m21 == 0 and m.m02 == 0 and m.m12 == 0 and
   m.m00 == m.m11 and m.m11 == m.m22
 
-proc mainDiagonal*(o: var Vec3; m: Mat3) {.inline.} =
+proc mainDiagonal*(o: var Vec3, m: Mat3) {.inline.} =
   ## Extract the main diagonal of the 3x3 matrix `m`, storing it in the 3D output vector `o`.
   o.x = m.m00
   o.y = m.m11
@@ -703,7 +703,7 @@ proc mainDiagonal*(m: Mat3): Vec3 {.inline.} =
   ## Extract the main diagonal of the 3x3 matrix `m`, storing it in a new 3D vector.
   result.mainDiagonal(m)
 
-proc antiDiagonal*(o: var Vec3; m: Mat3) {.inline.} =
+proc antiDiagonal*(o: var Vec3, m: Mat3) {.inline.} =
   ## Extract the anti-diagonal of the 3x3 matrix `m`, storing it in the 3D output vector `o`.
   o.x = m.m02
   o.y = m.m11
@@ -723,7 +723,7 @@ proc setId*(o: var Mat4) {.inline.} =
   o.m22 = 1
   o.m33 = 1
 
-proc `*=`*(o: var Mat4; m: Mat4) {.inline.} =
+proc `*=`*(o: var Mat4, m: Mat4) {.inline.} =
   ## Multiply the 4x4 matrices `o` by `m`, storing the result back into the output matrix `o`.
   let
     a = o
@@ -745,18 +745,18 @@ proc `*=`*(o: var Mat4; m: Mat4) {.inline.} =
   o.m23 = a.m20 * b.m03 + a.m21 * b.m13 + a.m22 * b.m23 + a.m23 * b.m33
   o.m33 = a.m30 * b.m03 + a.m31 * b.m13 + a.m32 * b.m23 + a.m33 * b.m33
 
-proc `*`*(o: var Vec4; m: Mat4; v: Vec4) {.inline.} =
+proc `*`*(o: var Vec4, m: Mat4, v: Vec4) {.inline.} =
   ## Multiply the 4x4 matrix `m` by the 4D vector `v`, storing the result in the output vector `o`.
   o.x = m.m00 * v.x + m.m01 * v.y + m.m02 * v.z + m.m03 * v.w
   o.y = m.m10 * v.x + m.m11 * v.y + m.m12 * v.z + m.m13 * v.w
   o.z = m.m20 * v.x + m.m21 * v.y + m.m22 * v.z + m.m23 * v.w
   o.w = m.m30 * v.x + m.m31 * v.y + m.m32 * v.z + m.m33 * v.w
 
-proc `*`*(m: Mat4; v: Vec4): Vec4 {.inline.} =
+proc `*`*(m: Mat4, v: Vec4): Vec4 {.inline.} =
   ## Multiply the 4x4 matrix `m` by the 4D vector `v`, storing the result in a new vector.
   result.`*`(m, v)
 
-proc column*(o: var Vec4; m: Mat4; index: range[0..3]) {.inline.} =
+proc column*(o: var Vec4, m: Mat4, index: range[0..3]) {.inline.} =
   ## Extract the 4D column vector at the given `index` from the 4x4 matrix `m`, storing the result
   ## in the output vector `o`.
   case index
@@ -765,12 +765,12 @@ proc column*(o: var Vec4; m: Mat4; index: range[0..3]) {.inline.} =
   of 2: o[0..3] = m[8..11]
   of 3: o[0..3] = m[12..15]
 
-proc column*(m: Mat4; index: range[0..3]): Vec4 {.inline.} =
+proc column*(m: Mat4, index: range[0..3]): Vec4 {.inline.} =
   ## Extract the 4D column vector at the given `index` from the 4x4 matrix `m`, storing the result
   ## in a new vector.
   result.column(m, index)
 
-proc `column=`*(o: var Mat4; m: Mat4; v: Vec4; index: range[0..3]) {.inline.} =
+proc `column=`*(o: var Mat4, m: Mat4, v: Vec4, index: range[0..3]) {.inline.} =
   ## Set the components of a column at the given `index` of the 4x4 matrix `m` from the vector `v`,
   ## storing the result in the output matrix `o`.
   o = m
@@ -780,12 +780,12 @@ proc `column=`*(o: var Mat4; m: Mat4; v: Vec4; index: range[0..3]) {.inline.} =
   of 2: o[8..11] = v[0..3]
   of 3: o[12..15] = v[0..3]
 
-proc `column=`*(m: Mat4; v: Vec4; index: range[0..3]): Mat4 {.inline.} =
+proc `column=`*(m: Mat4, v: Vec4, index: range[0..3]): Mat4 {.inline.} =
   ## Set the components of a column at the given `index` of the 4x4 matrix `m` from the vector `v`,
   ## storing the result in a new matrix.
   result.`column=`(m, v, index)
 
-proc copyRotation*(o: var Mat4; m: Mat4) {.inline.} =
+proc copyRotation*(o: var Mat4, m: Mat4) {.inline.} =
   ## Copy the 3x3 rotation portion of the 4x4 matrix `m` into the rotation portion of the 4x4 matrix
   ## `o`.
   o.m00 = m.m00
@@ -804,7 +804,7 @@ proc copyRotation*(m: Mat4): Mat4 {.inline.} =
   result.copyRotation(m)
   result.m33 = 1
 
-proc rotation*(o: var Mat3; m: Mat4) {.inline.} =
+proc rotation*(o: var Mat3, m: Mat4) {.inline.} =
   ## Copy the 3x3 rotation portion of the 4x4 matrix `m` into the 3x3 matrix `o`.
   o.m00 = m.m00
   o.m10 = m.m10
@@ -820,7 +820,7 @@ proc rotation*(m: Mat4): Mat3 {.inline.} =
   ## Copy the 3x3 rotation portion of the 4x4 matrix `m` into a new 3x3 matrix.
   result.rotation(m)
 
-proc rotation*(o: var Vec3; m: Mat4; axis: Axis3d) {.inline.} =
+proc rotation*(o: var Vec3, m: Mat4, axis: Axis3d) {.inline.} =
   ## Extract the 3D rotation along `axis` from the 4x4 matrix `m`, storing the result in the output
   ## vector `o`.
   case axis
@@ -828,12 +828,12 @@ proc rotation*(o: var Vec3; m: Mat4; axis: Axis3d) {.inline.} =
   of Axis3d.Y: o[0..2] = m[4..6]
   of Axis3d.Z: o[0..2] = m[8..10]
 
-proc rotation*(m: Mat4; axis: Axis3d): Vec3 {.inline.} =
+proc rotation*(m: Mat4, axis: Axis3d): Vec3 {.inline.} =
   ## Extract the 3D rotation along `axis` from the 4x4 matrix `m`, storing the result in a new
   ## vector.
   result.rotation(m, axis)
 
-proc `rotation=`*(o: var Mat4; m: (Mat3 or Mat4)) {.inline.} =
+proc `rotation=`*(o: var Mat4, m: (Mat3 or Mat4)) {.inline.} =
   ## Copy the components of the 3x3 matrix `m` into the rotation portion of the 4x4 matrix `o`.
   o.m00 = m.m00
   o.m10 = m.m10
@@ -849,7 +849,7 @@ proc `rotation=`*(m: Mat3): Mat4 {.inline.} =
   ## Copy the components of the 3x3 matrix `m` into the rotation portion of a new 4x4 matrix.
   result.rotation = m
 
-proc `rotation=`*(o: var Mat4; v: Vec3; axis: Axis3d) {.inline.} =
+proc `rotation=`*(o: var Mat4, v: Vec3, axis: Axis3d) {.inline.} =
   ## Set the rotation components along `axis` of the 4x4 matrix `m` from the 3D vector `v`, storing
   ## the result in the output matrix `o`.
   case axis
@@ -857,17 +857,17 @@ proc `rotation=`*(o: var Mat4; v: Vec3; axis: Axis3d) {.inline.} =
   of Axis3d.Y: o[4..6] = v[0..2]
   of Axis3d.Z: o[8..10] = v[0..2]
 
-proc `rotation=`*(m: Mat4; v: Vec3; axis: Axis3d): Mat4 {.inline.} =
+proc `rotation=`*(m: Mat4, v: Vec3, axis: Axis3d): Mat4 {.inline.} =
   ## Set the rotation components along `axis` of the 4x4 matrix `m` from the 3D vector `v`, storing
   ## the result in a new matrix.
   result = m
   result.`rotation=`(v, axis)
 
-proc rotate*(o: var Mat4; m: Mat4; v: Vec3; space: Space = Space.local) =
+proc rotate*(o: var Mat4, m: Mat4, v: Vec3, space: Space = Space.local) =
   ## Rotate the 4x4 matrix `m` by the vector of Euler angles `v`, storing the result in the output
   ## matrix `o`. `space` can be set to `Space.local` or `Space.world` to perform the rotation in
   ## local or world space.
-  proc rotateAxis(o: var Mat3; m: Mat3; space: Space) =
+  proc rotateAxis(o: var Mat3, m: Mat3, space: Space) =
     case space:
       of Space.local: o = o * m
       of Space.world: o = m * o
@@ -889,14 +889,14 @@ proc rotate*(o: var Mat4; m: Mat4; v: Vec3; space: Space = Space.local) =
   rotateAxis(outMat3, t, space)
   o.`rotation=`(outMat3)
 
-proc rotate*(m: Mat4; v: Vec3; space: Space = Space.local): Mat4 {.inline.} =
+proc rotate*(m: Mat4, v: Vec3, space: Space = Space.local): Mat4 {.inline.} =
   ## Rotate the matrix `m` by the vector of Euler angles `v`, storing the result in a new matrix.
   ## `space` can be set to `Space.local` or `Space.world` to perform the rotation in local or world
   ## space.
   result = m
   result.rotate(m, v, space)
 
-proc normalizeRotation*(o: var Mat4; m: Mat4) {.inline.} =
+proc normalizeRotation*(o: var Mat4, m: Mat4) {.inline.} =
   ## Normalize the columns of the 3x3 rotation portion of the 4x4 matrix `m`, storing the result in
   ## the 4x4 output matrix `o`.
   var
@@ -918,7 +918,7 @@ proc normalizeRotation*(m: Mat4): Mat4 {.inline.} =
   result = m
   result.normalizeRotation(m)
 
-proc translation*(o: var Vec3; m: Mat4) {.inline.} =
+proc translation*(o: var Vec3, m: Mat4) {.inline.} =
   ## Extract the 3D translation vector from the 4x4 matrix `m`, storing the result in the output
   ## vector `o`.
   o.x = m.m03
@@ -929,7 +929,7 @@ proc translation*(m: Mat4): Vec3 {.inline.} =
   ## Extract the 3D translation vector from the 4x4 matrix `m`, storing the result in a new vector.
   result.translation(m)
 
-proc `translation=`*(o: var Mat4; m: Mat4; v: Vec3) {.inline.} =
+proc `translation=`*(o: var Mat4, m: Mat4, v: Vec3) {.inline.} =
   ## Set the translation components of the 4x4 matrix `m` from the vector `v`, storing the result in
   ## the output matrix `o`.
   o.copyRotation(m)
@@ -938,12 +938,12 @@ proc `translation=`*(o: var Mat4; m: Mat4; v: Vec3) {.inline.} =
   o.m23 = v.z
   o.m33 = m.m33
 
-proc `translation=`*(m: Mat4; v: Vec3): Mat4 {.inline.} =
+proc `translation=`*(m: Mat4, v: Vec3): Mat4 {.inline.} =
   ## Set the translation components of the 4x4 matrix `m` from the vector `v`, storing the result in
   ## a new matrix.
   result.`translation=`(m, v)
 
-proc translate*(o: var Mat4; m: Mat4; v: Vec3) {.inline.} =
+proc translate*(o: var Mat4, m: Mat4, v: Vec3) {.inline.} =
   ## Translate the 4x4 matrix `m` by the 3D translation vector `v`, storing the result in the output
   ## matrix `o`.
   o.m00 = m.m00 + m.m30 * v.x
@@ -963,12 +963,12 @@ proc translate*(o: var Mat4; m: Mat4; v: Vec3) {.inline.} =
   o.m23 = m.m23 + m.m33 * v.z
   o.m33 = m.m33
 
-proc translate*(m: Mat4; v: Vec3): Mat4 {.inline.} =
+proc translate*(m: Mat4, v: Vec3): Mat4 {.inline.} =
   ## Translate the 4x4 matrix `m` by the 3D translation vector `v`, storing the result in a new
   ## matrix.
   result.translate(m, v)
 
-proc scale*(o: var Vec3; m: Mat4) {.inline.} =
+proc scale*(o: var Vec3, m: Mat4) {.inline.} =
   ## Extract the 3D scale vector from the 4x4 matrix `m`, storing the result in the output vector
   ## `o`.
   o.x = m.rotation(Axis3d.X).len
@@ -979,7 +979,7 @@ proc scale*(m: Mat4): Vec3 {.inline.} =
   ## Extract the 3D scale vector from the 4x4 matrix `m`, storing the result in a new vector.
   result.scale(m)
 
-proc `scale=`*(o: var Mat4; m: Mat4; v: Vec3) {.inline.} =
+proc `scale=`*(o: var Mat4, m: Mat4, v: Vec3) {.inline.} =
   ## Set the scale of the 4x4 matrix `m` from the 3D vector `v`, storing the result in the output
   ## matrix `o`.
   o = m
@@ -987,11 +987,11 @@ proc `scale=`*(o: var Mat4; m: Mat4; v: Vec3) {.inline.} =
   o.m11 = v.y
   o.m22 = v.z
 
-proc `scale=`*(m: Mat4; v: Vec3): Mat4 {.inline.} =
+proc `scale=`*(m: Mat4, v: Vec3): Mat4 {.inline.} =
   ## Set the scale of the 4x4 matrix `m` from the 3D vector `v`, storing the result in a new matrix.
   result.`scale=`(m, v)
 
-proc scale*(o: var Mat4; m: Mat4; v: Vec3) {.inline.} =
+proc scale*(o: var Mat4, m: Mat4, v: Vec3) {.inline.} =
   ## Scale the 4x4 matrix `m` by the 3D vector `v`, storing the result in the output matrix `o`.
   o.m00 = m.m00 * v.x
   o.m10 = m.m10 * v.y
@@ -1010,11 +1010,11 @@ proc scale*(o: var Mat4; m: Mat4; v: Vec3) {.inline.} =
   o.m23 = m.m23 * v.z
   o.m33 = m.m33
 
-proc scale*(m: Mat4; v: Vec3): Mat4 {.inline.} =
+proc scale*(m: Mat4, v: Vec3): Mat4 {.inline.} =
   ## Scale the 4x4 matrix `m` by the 3D vector `v`, storing the result in a new matrix.
   result.scale(m, v)
 
-proc transpose*(o: var Mat4; m: Mat4) {.inline.} =
+proc transpose*(o: var Mat4, m: Mat4) {.inline.} =
   ## Transpose the 4x4 matrix `m`, storing the result in the output matrix `o`.
   o = m
   swap(o.m10, o.m01)
@@ -1032,7 +1032,7 @@ proc isOrthogonal*(m: Mat4): bool {.inline.} =
   ## Check if the 4x4 matrix `m` is orthogonal.
   m * m.transpose ~= mat4_id
 
-proc orthoNormalize*(o: var Mat4; m: Mat4) =
+proc orthoNormalize*(o: var Mat4, m: Mat4) =
   ## Orthonormalize the 4x4 matrix `m` using the Gram-Schmidt process, storing the result in the
   ## output matrix `o`.
   var
@@ -1063,7 +1063,7 @@ proc isDiagonal*(m: Mat4): bool {.inline.} =
   m.m32 == 0 and m.m03 == 0 and m.m13 == 0 and m.m23 == 0 and
   m.m00 == m.m11 and m.m11 == m.m22 and m.m22 == m.m33
 
-proc mainDiagonal*(o: var Vec4; m: Mat4) {.inline.} =
+proc mainDiagonal*(o: var Vec4, m: Mat4) {.inline.} =
   ## Extract the main diagonal of the 4x4 matrix `m`, storing it in the 4D output vector `o`.
   o.x = m.m00
   o.y = m.m11
@@ -1074,7 +1074,7 @@ proc mainDiagonal*(m: Mat4): Vec4 {.inline.} =
   ## Extract the main diagonal of the 4x4 matrix `m`, storing it in a new 4D vector.
   result.mainDiagonal(m)
 
-proc antiDiagonal*(o: var Vec4; m: Mat4) {.inline.} =
+proc antiDiagonal*(o: var Vec4, m: Mat4) {.inline.} =
   ## Extract the anti-diagonal of the 4x4 matrix `m`, storing it in the 4D output vector `o`.
   o.x = m.m03
   o.y = m.m12
@@ -1100,7 +1100,7 @@ proc determinant*(m: Mat4): float32 =
   m.m02 * m.m13 * m.m21 * m.m30 - m.m02 * m.m10 * m.m21 * m.m32 -
   m.m03 * m.m11 * m.m22 * m.m30 - m.m02 * m.m12 * m.m20 * m.m31
 
-proc invertOrthogonal*(o: var Mat4; m: Mat4) {.inline.} =
+proc invertOrthogonal*(o: var Mat4, m: Mat4) {.inline.} =
   ## Invert the orthogonal 4x4 matrix `m`, storing the result in the output matrix `o`.
   ##
   ## **Note**: This is a less expensive invert method that can be used if is known that a matrix is
@@ -1120,7 +1120,7 @@ proc invertOrthogonal*(m: Mat4): Mat4 {.inline.} =
   ## orthogonal.
   result.invertOrthogonal(m)
 
-proc invert*(o: var Mat4; m: Mat4) =
+proc invert*(o: var Mat4, m: Mat4) =
   ## Invert the 4x4 matrix `m`, storing the result in the output matrix `o`.
   let
     det = m.determinant
@@ -1163,7 +1163,7 @@ proc invert*(m: Mat4): Mat4 {.inline.} =
   ## Invert the 4x4 m.m00trix `m`, storing the result in a new matrix.
   result.invert(m)
 
-proc lookAt*(o: var Mat4; eye, target, up: Vec3) =
+proc lookAt*(o: var Mat4, eye, target, up: Vec3) =
   ## Construct a 4x4 view matrix, storing the result in the output matrix `o`.
   let
     a = normalize(target-eye)
@@ -1187,7 +1187,7 @@ proc lookAt*(eye, target, up: Vec3): Mat4 {.inline.} =
   result.setId
   result.lookAt(eye, target, up)
 
-proc ortho*(o: var Mat4; left, right, bottom, top, near, far: float32) =
+proc ortho*(o: var Mat4, left, right, bottom, top, near, far: float32) =
   ## Construct a 4x4 orthographic projection matrix, storing the result in the output matrix `o`.
   let
     x = right - left
@@ -1205,7 +1205,7 @@ proc ortho*(left, right, bottom, top, near, far: float32): Mat4 {.inline.} =
   ## Construct a 4x4 orthographic projection matrix, storing the result in a new matrix.
   result.ortho(left, right, bottom, top, near, far)
 
-proc perspective*(o: var Mat4; fovY, aspect, near, far: float32) =
+proc perspective*(o: var Mat4, fovY, aspect, near, far: float32) =
   ## Construct a 4x4 perspective projection matrix, storing the result in the output matrix `o`.
   let
     f = 1 / tan(fovY / 2)
