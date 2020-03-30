@@ -15,8 +15,6 @@ type
     X, Y
   Axis3d* {.pure.} = enum
     X, Y, Z
-  Space* {.pure.} = enum
-    local, world
   MatrixInvertError* = object of Exception
 
 proc `$`*[N: static[int]](m: Mat[N]): string =
@@ -248,10 +246,6 @@ const mat4_id* = ## \
 
 # Common operations
 
-proc zero*(o: var SomeMat) {.inline.} =
-  ## Set all components of the matrix `o` to zero.
-  o.fill(0)
-
 proc rand*(o: var SomeMat, range = 0f..1f) {.inline.} =
   ## Randomize the components of the matrix `o` to be within the range `range`, storing the result
   ## in the output matrix `o`.
@@ -261,37 +255,41 @@ proc rand*[T: SomeMat](t: typedesc[T], range = 0f..1f): T {.inline.} =
   ## Initialize a new matrix with its components randomized to be within the range `range`.
   result.rand(range)
 
-proc `~=`*(m1, m2: SomeMat, tolerance = 1e-5): bool {.inline.} =
-  ## Check if the matrices `m1` and `m2` are approximately equal.
-  genComponentWiseBool(`~=`, m1, m2, tolerance)
+proc zero*(o: var SomeMat) {.inline.} =
+  ## Set all components of the matrix `o` to zero.
+  o.fill(0)
 
-proc clamp*[T: SomeMat](o: var T, m: T, range = -Inf..Inf) {.inline.} =
+proc `~=`*(a, b: SomeMat, tolerance = 1e-5): bool {.inline.} =
+  ## Check if the matrices `a` and `b` are approximately equal.
+  genComponentWiseBool(`~=`, a, b, tolerance)
+
+proc clamp*[T: SomeMat](o: var T, m: T, range = -Inf.float32 .. Inf.float32) {.inline.} =
   ## Constrain each component of the matrix `m` to lie within `range`, storing the result in the
   ## output matrix `o`.
   for i, _ in o: o[i] = m[i].clamp(range.a, range.b)
 
-proc clamp*[T: SomeMat](m: T, range = -Inf..Inf): T {.inline.} =
+proc clamp*[T: SomeMat](m: T, range = -Inf.float32 .. Inf.float32): T {.inline.} =
   ## Constrain each component of the matrix `m` to lie within `range`, storing the result in a new
   ## matrix.
   result.clamp(m, range)
 
+proc `+`*[T: SomeMat](o: var T, a, b: T) {.inline.} =
+  ## Component-wise addition of the matrices `a` and `b`, storing the result in the output matrix
+  ## `o`.
+  for i, _ in o: o[i] = a[i] + b[i]
+
 proc `+`*[T: SomeMat](a, b: T): T {.inline.} =
   ## Component-wise addition of the matrices `a` and `b`, storing the result in a new matrix.
-  for i, _ in a: result[i] = a[i] + b[i]
+  result.`+`(a, b)
 
-proc `+=`*[T: SomeMat](o: var T, m: T) {.inline.} =
-  ## Component-wise addition of the matrices `o` and `m`, storing the result in the output matrix
+proc `-`*[T: SomeMat](o: var T, a, b: T) {.inline.} =
+  ## Component-wise subtraction of the matrices `a` and `b`, storing the result in the output matrix
   ## `o`.
-  for i, _ in o: o[i] += m[i]
+  for i, _ in o: o[i] = a[i] - b[i]
 
 proc `-`*[T: SomeMat](a, b: T): T {.inline.} =
   ## Component-wise subtraction of the matrices `a` and `b`, storing the result in a new matrix.
-  for i, _ in a: result[i] = a[i] - b[i]
-
-proc `-=`*[T: SomeMat](o: var T, m: T) {.inline.} =
-  ## Component-wise subtraction of the matrices `o` and `m`, storing the result in the output matrix
-  ## `o`.
-  for i, _ in m: o[i] -= m[i]
+  result.`-`(a, b)
 
 proc `-`*(o: var SomeMat) {.inline.} =
   ## Unary subtraction (negation) of the components of the matrix `o`, storing the result in the
@@ -301,12 +299,12 @@ proc `-`*(o: var SomeMat) {.inline.} =
 proc `-`*[T: SomeMat](m: T): T {.inline.} =
   ## Unary subtraction (negation) of the components of the matrix `m`, storing the result in a new
   ## matrix.
-  result.`-`(m)
+  result = m
+  result.`-`
 
 proc `*`*[T: SomeMat](a, b: T): T {.inline.} =
-  # Multiply matrices `a` and `b`, storing the result in a new matrix.
-  result = a
-  result *= b
+  # Multiply the matrices `a` and `b`, storing the result in a new matrix.
+  result.`*`(a, b)
 
 # 2x2 matrix operations
 
@@ -316,11 +314,11 @@ proc setId*(o: var Mat2) {.inline.} =
   o.m00 = 1
   o.m11 = 1
 
-proc `*=`*(o: var Mat2, m: Mat2) {.inline.} =
-  ## Multiply the 2x2 matrices `o` by `m`, storing the result back into the output matrix `o`.
+proc `*`*(o: var Mat2, a, b: Mat2) {.inline.} =
+  ## Multiply the 2x2 matrices `a` and `b`, storing the result in the output matrix `o`.
   let
-    a = o
-    b = m
+    a = a
+    b = b
   o.m00 = a.m00 * b.m00 + a.m01 * b.m10
   o.m10 = a.m10 * b.m00 + a.m11 * b.m10
   o.m01 = a.m00 * b.m01 + a.m01 * b.m11
@@ -382,7 +380,7 @@ proc rotate*(o: var Mat2, m: Mat2, angle: float32, space: Space = Space.local) {
   let
     s = angle.sin
     c = angle.cos
-    t = mat2(c, -s, s, c)
+    t = mat2(c, s, -s, c)
   case space:
     of Space.local: o = o * t
     of Space.world: o = t * o
@@ -441,11 +439,11 @@ proc setId*(o: var Mat3) {.inline.} =
   o.m11 = 1
   o.m22 = 1
 
-proc `*=`*(o: var Mat3, m: Mat3) {.inline.} =
-  ## Multiply the 3x3 matrices `o` by `m`, storing the result back into the output matrix `o`.
+proc `*`*(o: var Mat3, a, b: Mat3) {.inline.} =
+  ## Multiply the 3x3 matrices `a` and `b`, storing the result in the output matrix `o`.
   let
-    a = o
-    b = m
+    a = a
+    b = b
   o.m00 = a.m00 * b.m00 + a.m01 * b.m10 + a.m02 * b.m20
   o.m10 = a.m10 * b.m00 + a.m11 * b.m10 + a.m12 * b.m20
   o.m20 = a.m20 * b.m00 + a.m21 * b.m10 + a.m22 * b.m20
@@ -560,7 +558,7 @@ proc rotate*(o: var Mat3, m: Mat3, angle: float32, space: Space = Space.local) =
   let
     s = angle.sin
     c = angle.cos
-    t = mat2(c, -s, s, c)
+    t = mat2(c, s, -s, c)
   var outMat2 = o.rotation
   case space:
     of Space.local: outMat2 = outMat2 * t
@@ -723,11 +721,11 @@ proc setId*(o: var Mat4) {.inline.} =
   o.m22 = 1
   o.m33 = 1
 
-proc `*=`*(o: var Mat4, m: Mat4) {.inline.} =
-  ## Multiply the 4x4 matrices `o` by `m`, storing the result back into the output matrix `o`.
+proc `*`*(o: var Mat4, a, b: Mat4) {.inline.} =
+  ## Multiply the 4x4 matrices `a` and `b`, storing the result in the output matrix `o`.
   let
-    a = o
-    b = m
+    a = a
+    b = b
   o.m00 = a.m00 * b.m00 + a.m01 * b.m10 + a.m02 * b.m20 + a.m03 * b.m30
   o.m10 = a.m10 * b.m00 + a.m11 * b.m10 + a.m12 * b.m20 + a.m13 * b.m30
   o.m20 = a.m20 * b.m00 + a.m21 * b.m10 + a.m22 * b.m20 + a.m23 * b.m30
@@ -1049,7 +1047,7 @@ proc orthoNormalize*(o: var Mat4, m: Mat4) =
 proc orthoNormalize*(m: Mat4): Mat4 {.inline.} =
   ## Orthonormalize the 4x4 matrix `m` using the Gram-Schmidt process, storing the result in a new
   ## matrix.
-  result = m
+  result = mat4_id
   result.orthoNormalize(m)
 
 proc trace*(m: Mat4): float32 {.inline.} =
@@ -1091,14 +1089,14 @@ proc determinant*(m: Mat4): float32 =
   m.m00 * m.m13 * m.m21 * m.m32 + m.m01 * m.m10 * m.m23 * m.m32 +
   m.m01 * m.m12 * m.m20 * m.m33 + m.m01 * m.m13 * m.m22 * m.m30 +
   m.m02 * m.m10 * m.m21 * m.m33 + m.m02 * m.m11 * m.m23 * m.m30 +
-  m.m02 * m.m13 * m.m20 * m.m31 + m.m02 * m.m10 * m.m22 * m.m31 +
-  m.m03 * m.m11 * m.m20 * m.m32 + m.m02 * m.m12 * m.m21 * m.m30 -
+  m.m02 * m.m13 * m.m20 * m.m31 + m.m03 * m.m10 * m.m22 * m.m31 +
+  m.m03 * m.m11 * m.m20 * m.m32 + m.m03 * m.m12 * m.m21 * m.m30 -
   m.m00 * m.m11 * m.m23 * m.m32 - m.m00 * m.m12 * m.m21 * m.m33 -
   m.m00 * m.m13 * m.m22 * m.m31 - m.m01 * m.m10 * m.m22 * m.m33 -
   m.m01 * m.m12 * m.m23 * m.m30 - m.m01 * m.m13 * m.m20 * m.m32 -
   m.m02 * m.m10 * m.m23 * m.m31 - m.m02 * m.m11 * m.m20 * m.m33 -
-  m.m02 * m.m13 * m.m21 * m.m30 - m.m02 * m.m10 * m.m21 * m.m32 -
-  m.m03 * m.m11 * m.m22 * m.m30 - m.m02 * m.m12 * m.m20 * m.m31
+  m.m02 * m.m13 * m.m21 * m.m30 - m.m03 * m.m10 * m.m21 * m.m32 -
+  m.m03 * m.m11 * m.m22 * m.m30 - m.m03 * m.m12 * m.m20 * m.m31
 
 proc invertOrthogonal*(o: var Mat4, m: Mat4) {.inline.} =
   ## Invert the orthogonal 4x4 matrix `m`, storing the result in the output matrix `o`.

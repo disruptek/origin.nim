@@ -72,7 +72,7 @@ proc vec3*(v: Vec): Vec3 {.inline.} =
   ## if `v` has less components than the type to initialize, any remaining
   ## components are set to zero. If `v` has more components than the type to
   ## initialize, the extras are dropped from the result.
-  const high = min(3, v.len)-1
+  let high = min(2, system.len(v)-1)
   result[0..high] = v[0..high]
 
 proc vec3*(x, y: float32): Vec3 {.inline.} =
@@ -108,7 +108,7 @@ proc vec4*(v: Vec): Vec4 {.inline.} =
   ## if `v` has less components than the type to initialize, any remaining
   ## components are set to zero. If `v` has more components than the type to
   ## initialize, the extras are dropped from the result.
-  const high = min(4, v.len)-1
+  let high = min(3, system.len(v)-1)
   result[0..high] = v[0..high]
 
 proc vec4*(x, y: float32): Vec4 {.inline.} =
@@ -195,10 +195,6 @@ const backward* = ## \
 
 # Common operations
 
-proc zero*(o: var SomeVec) {.inline.} =
-  ## Set all components of the vector `o` to zero.
-  o.fill(0)
-
 proc rand*(o: var SomeVec, range = 0f..1f) {.inline.} =
   ## Randomize the components of the vector `o` to be within the range `range`, storing the result
   ## in the output vector `o`.
@@ -208,37 +204,41 @@ proc rand*[T: SomeVec](t: typedesc[T], range = 0f..1f): T {.inline.} =
   ## Initialize a new vector with its components randomized to be within the range `range`.
   result.rand(range)
 
-proc `~=`*(v1, v2: SomeVec, tolerance = 1e-5): bool {.inline.} =
-  ## Check if the vectors `v1` and `v2` are approximately equal.
-  genComponentWiseBool(`~=`, v1, v2, tolerance)
+proc zero*(o: var SomeVec) {.inline.} =
+  ## Set all components of the vector `o` to zero.
+  o.fill(0)
 
-proc clamp*[T: SomeVec](o: var T, v: T, range = -Inf..Inf) {.inline.} =
+proc `~=`*(a, b: SomeVec, tolerance = 1e-5): bool {.inline.} =
+  ## Check if the vectors `a` and `b` are approximately equal.
+  genComponentWiseBool(`~=`, a, b, tolerance)
+
+proc clamp*[T: SomeVec](o: var T, v: T, range = -Inf.float32 .. Inf.float32) {.inline.} =
   ## Constrain each component of the vector `v` to lie within `range`, storing the result in the
   ## output vector `o`.
   for i, _ in o: o[i] = v[i].clamp(range.a, range.b)
 
-proc clamp*[T: SomeVec](v: T, range = -Inf..Inf): T {.inline.} =
+proc clamp*[T: SomeVec](v: T, range = -Inf.float32 .. Inf.float32): T {.inline.} =
   ## Constrain each component of the vector `v` to lie within `range`, storing the result in a
   ## new vector.
   result.clamp(v, range)
 
-proc `+`*[T: SomeVec](v1, v2: T): T {.inline.} =
-  ## Component-wise addition of the vectors `v1` and `v2`, storing the result in a new matrix.
-  for i, _ in v1: result[i] = v1[i] + v2[i]
-
-proc `+=`*[T: SomeVec](o: var T, v: T) {.inline.} =
-  ## Component-wise addition of the vectors `o` and `v`, storing the result in the output vector
+proc `+`*[T: SomeVec](o: var T, a, b: T) {.inline.} =
+  ## Component-wise addition of the vectors `a` and `b`, storing the result in the output vector
   ## `o`.
-  for i, _ in o: o[i] += v[i]
+  for i, _ in o: o[i] = a[i] + b[i]
 
-proc `-`*[T: SomeVec](v1, v2: T): T {.inline.} =
-  ## Component-wise subtraction of the vectors `v1` and `v2`, storing the result in a new vector.
-  for i, _ in v1: result[i] = v1[i] - v2[i]
+proc `+`*[T: SomeVec](a, b: T): T {.inline.} =
+  ## Component-wise addition of the vectors `a` and `b`, storing the result in a new vector.
+  result.`+`(a, b)
 
-proc `-=`*[T: SomeVec](o: var T, v: T) {.inline.} =
-  ## Component-wise subtraction of the vectors `o` and `v`, storing the result in the output
-  ## vector `o`.
-  for i, _ in v: o[i] -= v[i]
+proc `-`*[T: SomeVec](o: var T, a, b: T) {.inline.} =
+  ## Component-wise subtraction of the vectors `a` and `b`, storing the result in the output vector
+  ## `o`.
+  for i, _ in o: o[i] = a[i] - b[i]
+
+proc `-`*[T: SomeVec](a, b: T): T {.inline.} =
+  ## Component-wise subtraction of the vectors `a` and `b`, storing the result in a new vector.
+  result.`-`(a, b)
 
 proc `-`*(o: var SomeVec) {.inline.} =
   ## Unary subtraction (negation) of the components of the vector `o`, storing the result in the
@@ -248,48 +248,48 @@ proc `-`*(o: var SomeVec) {.inline.} =
 proc `-`*[T: SomeVec](v: T): T {.inline.} =
   ## Unary subtraction (negation) of the components of the vector `v`, storing the result in a new
   ## vector.
-  result.`-`(v)
+  result = v
+  result.`-`
 
-proc `*`*[T: SomeVec](v1, v2: T): T {.inline.} =
-  ## Calculate the Hadamard product (component-wise vector multiplication) of vectors `v1` and `v2`,
+proc `*`*[T: SomeVec](o: var T, a, b: T) {.inline.} =
+  ## Calculate the Hadamard product (component-wise vector multiplication) of vectors `a` and `b`,
+  ## storing the result in the output vector `o`.
+  for i, _ in o: o[i] = a[i] * b[i]
+
+proc `*`*[T: SomeVec](a, b: T): T {.inline.} =
+  ## Calculate the Hadamard product (component-wise vector multiplication) of vectors `a` and `b`,
   ## storing the result in a new vector.
-  for i, _ in v1: result[i] = v1[i] * v2[i]
+  result.`*`(a, b)
 
-proc `*=`*[T: SomeVec](o: var T, v: T) {.inline.} =
-  ## Calculate the Hadamard product (component-wise vector multiplication) of vectors `o` and `v`,
-  ## storing the result back into vector `o`.
-  for i, _ in o: o[i] *= v[i]
+proc `*`*[T: SomeVec](o: var T, v: T, scalar: float32) {.inline.} =
+  ## Scale vector `v` by `scalar`, storing the result in the output vector `o`.
+  for i, _ in o: o[i] = v[i] * scalar
 
 proc `*`*[T: SomeVec](v: T, scalar: float32): T {.inline.} =
   ## Scale vector `v` by `scalar`, storing the result in a new vector.
-  for i, _ in v: result[i] = v[i] * scalar
+  result.`*`(v, scalar)
 
-proc `*=`*(o: var SomeVec, scalar: float32) {.inline.} =
-  ## Scale vector `o` by `scalar`, storing the result back into vector `o`.
-  for i, c in o: o[i] *= scalar
+proc `/`*[T: SomeVec](o: var T, a, b: T) {.inline.} =
+  ## Calculate the Hadamard quotient (component-wise vector division) of vectors `a` and `b`,
+  ## storing the result in the output vector `o`.
+  for i, _ in o: o[i] = if b[i] == 0: 0.0 else: a[i] / b[i]
 
-proc `/`*[T: SomeVec](v1, v2: T): T {.inline.} =
-  ## Calculate the Hadamard quotient (component-wise vector division) of vectors `v1` and `v2`,
+proc `/`*[T: SomeVec](a, b: T): T {.inline.} =
+  ## Calculate the Hadamard quotient (component-wise vector division) of vectors `a` and `b`,
   ## storing the result in a new vector.
-  for i, _ in v1: result[i] = if v2[i] == 0: 0.0 else: v1[i] / v2[i]
+  result.`/`(a, b)
 
-proc `/=`*[T: SomeVec](o: var T, v: T) {.inline.} =
-  ## Calculate the Hadamard quotient (component-wise vector division) of vectors `o` and `v`,
-  ## storing the result back into vector `o`.
-  for i, _ in o: o[i] = if v[i] == 0: 0.0 else: o[i] / v[i]
+proc `/`*[T: SomeVec](o: var T, v: T, scalar: float32) {.inline.} =
+  ## Scale vector `v` by the inverse of `scalar`, storing the result in the the output vector `o`.
+  ##
+  ## **Note**: If `scalar` is zero, the result will be zero rather than undefined.
+  for i, _ in o: o[i] = if scalar == 0: 0.0 else: v[i] / scalar
 
 proc `/`*[T: SomeVec](v: T, scalar: float32): T {.inline.} =
   ## Scale vector `v` by the inverse of `scalar`, storing the result in a new vector.
   ##
   ## **Note**: If `scalar` is zero, the result will be zero rather than undefined.
-  for i, _ in v: result[i] = if scalar == 0: 0.0 else: v[i] / scalar
-
-proc `/=`*(o: var SomeVec, scalar: float32) {.inline.} =
-  ## Scale vector `o` by the inverse of `scalar`, storing the result back into the output vector
-  ## `o`.
-  ##
-  ## **Note**: If `scalar` is zero, the result will be zero rather than undefined.
-  for i, _ in o: o[i] = if scalar == 0: 0.0 else: o[i] / scalar
+  result.`/`(v, scalar)
 
 proc `^`*[T: SomeVec](o: var T, v: T, power: float32) {.inline.} =
   ## Raise each component of vector `v` to the power of `power`, storing the result in the output
@@ -300,17 +300,17 @@ proc `^`*[T: SomeVec](v: T, power: float32): T {.inline.} =
   ## Raise each component of vector `v` to the power of `power`, storing the result in a new vector.
   result.`^`(v, power)
 
-proc `<`*(v1, v2: SomeVec): bool =
-  ## Perform a component-wise less than comparison of the vectors `v1` and `v2`.
+proc `<`*(a, b: SomeVec): bool =
+  ## Perform a component-wise less than comparison of the vectors `a` and `b`.
   ##
   ## **Note**: The system-defined template will allow `>` to be used as well.
-  genComponentWiseBool(`<`, v1, v2)
+  genComponentWiseBool(`<`, a, b)
 
-proc `<=`*(v1, v2: SomeVec): bool {.inline.} =
-  ## Perform a component-wise greater than comparison of the vectors `v1` and `v2`.
+proc `<=`*(a, b: SomeVec): bool {.inline.} =
+  ## Perform a component-wise greater than comparison of the vectors `a` and `b`.
   ##
   ## **Note**: The system-defined template will allow `>=` to be used as well.
-  genComponentWiseBool(`<=`, v1, v2)
+  genComponentWiseBool(`<=`, a, b)
 
 proc sign*[T: SomeVec](o: var T, v: T) {.inline.} =
   ## Extract the sign of each component of vector `v`, storing the result in the output vector `o`.
@@ -335,9 +335,9 @@ proc fract*[T: SomeVec](v: T): T {.inline.} =
   ## Compute the fractional part of each component of vector `v`, storing the result in a new vector.
   result.fract(v)
 
-proc dot*(v1, v2: SomeVec): float32 {.inline.} =
-  ## Calculate the dot product of vectors `v1` and `v2`.
-  for i, _ in v1: result += v1[i] * v2[i]
+proc dot*(a, b: SomeVec): float32 {.inline.} =
+  ## Calculate the dot product of vectors `a` and `b`.
+  for i, _ in a: result += a[i] * b[i]
 
 proc sqrt*[T: SomeVec](o: var T, v: T) {.inline.} =
   ## Calculate the square root of each component of vector `v`, storing the result in the output
@@ -367,20 +367,19 @@ proc len*(v: SomeVec): float32 {.inline.} =
   ## example when comparing relative distances.
   v.lenSq.sqrt
 
-proc distSq*(v1, v2: SomeVec): float32 {.inline.} =
-  ## Calculate the squared distance between vectors `v1` and `v2`.
-  lenSq(v2-v1)
+proc distSq*(a, b: SomeVec): float32 {.inline.} =
+  ## Calculate the squared distance between vectors `a` and `b`.
+  lenSq(b-a)
 
-proc dist*(v1, v2: SomeVec): float32 {.inline.} =
-  ## Calculate the distance between vectors `v1` and `v2`.
-  distSq(v1, v2).sqrt
+proc dist*(a, b: SomeVec): float32 {.inline.} =
+  ## Calculate the distance between vectors `a` and `b`.
+  distSq(a, b).sqrt
 
 proc normalize*[T: SomeVec](o: var T, v: T) {.inline.} =
   ## Calculate the unit vector in the same direction as vector `v`, storing the result in the output
   ## vector `o`.
   let len = v.len
-  o = v
-  if len != 0: o *= 1/len
+  if len != 0: o.`*`(v, 1/len) else: o.zero
 
 proc normalize*[T: SomeVec](v: T): T {.inline.} =
   ## Calculate the unit vector in the same direction as vector `v`, storing the result in a new
@@ -426,25 +425,25 @@ proc abs*[T: SomeVec](v: T): T {.inline.} =
   ## vector.
   result.abs(v)
 
-proc min*[T: SomeVec](o: var T, v1, v2: T) {.inline.} =
-  ## Retrieve the lesser of each component for vectors `v1` and `v2`, storing the result in the
+proc min*[T: SomeVec](o: var T, a, b: T) {.inline.} =
+  ## Retrieve the lesser of each component for vectors `a` and `b`, storing the result in the
   ## output vector `o`.
-  for i, _ in o: o[i] = min(v1[i], v2[i])
+  for i, _ in o: o[i] = min(a[i], b[i])
 
-proc min*[T: SomeVec](v1, v2: T): T {.inline.} =
-  ## Retrieve the lesser of each component for vectors `v1` and `v2`, storing the result in a new
+proc min*[T: SomeVec](a, b: T): T {.inline.} =
+  ## Retrieve the lesser of each component for vectors `a` and `b`, storing the result in a new
   ## vector.
-  result.min(v1, v2)
+  result.min(a, b)
 
-proc max*[T: SomeVec](o: var T, v1, v2: T) {.inline.} =
-  ## Retrieve the greater of each component for vectors `v1` and `v2`, storing the result in the
+proc max*[T: SomeVec](o: var T, a, b: T) {.inline.} =
+  ## Retrieve the greater of each component for vectors `a` and `b`, storing the result in the
   ## output vector `o`.
-  for i, _ in o: o[i] = max(v1[i], v2[i])
+  for i, _ in o: o[i] = max(a[i], b[i])
 
-proc max*[T: SomeVec](v1, v2: T): T {.inline.} =
-  ## Retrieve the greater of each component for vectors `v1` and `v2`, storing the result in a new
+proc max*[T: SomeVec](a, b: T): T {.inline.} =
+  ## Retrieve the greater of each component for vectors `a` and `b`, storing the result in a new
   ## vector.
-  result.max(v1, v2)
+  result.max(a, b)
 
 proc `mod`*[T: SomeVec](o: var T, v: T, divisor: float32) {.inline.} =
   ## Compute the modulus of each component of vector `v` by `divisor`, storing the result in the
@@ -531,42 +530,44 @@ proc degrees*[T: SomeVec](v: T): T {.inline.} =
   ## vector.
   result.degrees(v)
 
-proc lerp*[T: SomeVec](o: var T, v1, v2: T, factor: float32) {.inline.} =
-  ## Linearly interpolate between the values of each component in vectors `v1` and `v2` by `factor`,
+proc lerp*[T: SomeVec](o: var T, a, b: T, factor: float32) {.inline.} =
+  ## Linearly interpolate between the values of each component in vectors `a` and `b` by `factor`,
   ## storing the result in the output vector `o`.
-  for i, _ in o: o[i] = lerp(v1[i], v2[i], factor)
+  for i, _ in o: o[i] = lerp(a[i], b[i], factor)
 
-proc lerp*[T: SomeVec](v1, v2: T, factor: float32): T {.inline.} =
-  ## Linearly interpolate between the values of each component in vectors `v1` and `v2` by `factor`,
+proc lerp*[T: SomeVec](a, b: T, factor: float32): T {.inline.} =
+  ## Linearly interpolate between the values of each component in vectors `a` and `b` by `factor`,
   ## storing the result in a new vector.
-  result.lerp(v1, v2, factor)
+  result.lerp(a, b, factor)
 
-proc angle*(v1, v2: SomeVec): float32 {.inline.} =
-  ## Compute the angle in radians between vectors `v1` and `v2`.
-  let m = v1.len * v2.len
-  if m == 0: 0f else: arccos(dot(v1, v2) / m)
+# 2D and 3D vector operations
 
-proc sameDirection*(v1, v2: SomeVec, tolerance = 1e-5): bool {.inline.} =
-  ## Check whether vectors `v1` and `v2` are the same direction within `tolerance`.
-  dot(v1.normalize, v2.normalize) >= 1 - 1e-5
+proc angle*(a, b: Vec2 or Vec3): float32 {.inline.} =
+  ## Compute the angle in radians between vectors `a` and `b`.
+  let m = a.len * b.len
+  if m == 0: 0f else: arccos(dot(a, b) / m)
+
+proc sameDirection*(a, b: Vec2 or Vec3, tolerance = 1e-5): bool {.inline.} =
+  ## Check whether vectors `a` and `b` are the same direction within `tolerance`.
+  dot(a.normalize, b.normalize) >= 1 - 1e-5
 
 # 3D vector operations
 
-proc cross*(o: var Vec3, v1, v2: Vec3) {.inline.} =
-  ## Calculate the cross product of 3D vectors `v1` and `v2`, storing the result in the output
-  ## vector `o`.
-  o.x = (v1.y * v2.z) - (v1.z * v2.y)
-  o.y = (v1.z * v2.x) - (v1.x * v2.z)
-  o.z = (v1.x * v2.y) - (v1.y * v2.x)
+proc cross*(o: var Vec3, a, b: Vec3) {.inline.} =
+  ## Calculate the cross product of 3D vectors `a` and `b`, storing the result in the output vector
+  ## `o`.
+  o.x = (a.y * b.z) - (a.z * b.y)
+  o.y = (a.z * b.x) - (a.x * b.z)
+  o.z = (a.x * b.y) - (a.y * b.x)
 
-proc cross*(v1, v2: Vec3): Vec3 {.inline.} =
-  ## Calculate the cross product of 3D vectors `v1` and `v2`, storing the result in a new vector.
-  result.cross(v1, v2)
+proc cross*(a, b: Vec3): Vec3 {.inline.} =
+  ## Calculate the cross product of 3D vectors `a` and `b`, storing the result in a new vector.
+  result.cross(a, b)
 
-proc box*(v1, v2, v3: Vec3): float32 {.inline.} =
-  ## Calculate the box product of 3D vectors `v1`, `v2`, and `v3`.
-  dot(cross(v1, v2), v3)
+proc box*(a, b, c: Vec3): float32 {.inline.} =
+  ## Calculate the box product of 3D vectors `a`, `b`, and `c`.
+  dot(cross(a, b), c)
 
-proc isParallel*(v1, v2: Vec3): bool {.inline.} =
-  ## Check whether the 3D vectors `v1` and `v2` are parallel to each other.
-  cross(v1, v2) ~= vec3_zero
+proc isParallel*(a, b: Vec3): bool {.inline.} =
+  ## Check whether the 3D vectors `a` and `b` are parallel to each other.
+  cross(a, b) ~= vec3_zero
