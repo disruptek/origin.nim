@@ -2,7 +2,7 @@ import std/algorithm
 import std/math
 import std/random
 
-import common
+import internal
 
 type
   Vec*[N: static[int]] = array[N, float32]

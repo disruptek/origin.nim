@@ -2,7 +2,7 @@ import std/math
 import std/sequtils
 import std/unittest
 
-import origin/common
+import origin/internal
 import origin/vec
 
 suite "vec3":

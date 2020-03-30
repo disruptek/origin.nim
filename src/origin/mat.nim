@@ -2,7 +2,7 @@ import std/algorithm
 import std/math
 import std/random
 
-import common
+import internal
 import vec
 
 type
