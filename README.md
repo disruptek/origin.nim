@@ -7,8 +7,8 @@ A few notes:
 This software is of alpha-quality, although all math has been scrutinized for
 correctness and all unit tests currently pass. This is the author's first Nim
 library that was developed in the process of learning the language, and all code
-was ported from their existing (Common Lisp
-implementation)[https://github.com/mfiano/origin]. As such, it may not
+was ported from their existing [Common Lisp
+implementation](https://github.com/mfiano/origin). As such, it may not
 be very idiomatic or in the best of styles, and it is certainly lacking in the
 macrology department in an effort to be readable like it would be in a math
 text, and understandable to newcomers to the language without a lot of "magic"
