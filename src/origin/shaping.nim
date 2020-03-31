@@ -1,6 +1,6 @@
 import std/math
 
-const half_pi = PI/2
+const half_pi = Pi/2
 
 proc sineOut*(t: SomeFloat): SomeFloat {.inline.} =
   sin(half_pi * t)
@@ -9,7 +9,7 @@ proc sineIn*(t: SomeFloat): SomeFloat {.inline.} =
   sin((t - 1) * half_pi) + 1
 
 proc sineInOut*(t: SomeFloat): SomeFloat {.inline.} =
-  (1 - cos(t * PI)) * 0.5
+  (1 - cos(t * Pi)) * 0.5
 
 proc quadraticOut*(t: SomeFloat): SomeFloat {.inline.} =
   -(t * (t - 2))
@@ -99,18 +99,18 @@ proc circularInOut*(t: SomeFloat): SomeFloat {.inline.} =
 
 proc backOut*(t: SomeFloat): SomeFloat {.inline.} =
   let f = 1 - t
-  1 - f * f * f * f * sin(f * PI)
+  1 - f * f * f * f * sin(f * Pi)
 
 proc backIn*(t: SomeFloat): SomeFloat {.inline.} =
-  t * t * t * t * sin(t * PI)
+  t * t * t * t * sin(t * Pi)
 
 proc backInOut*(t: SomeFloat): SomeFloat {.inline.} =
   if t < 0.5:
     let f = t * 2
-    (f * f * f * f * sin(f * PI)) * 0.5
+    (f * f * f * f * sin(f * Pi)) * 0.5
   else:
     let f = 1 - (t * 2 - 1)
-    ((1 - (f * f * f * f * sin(f * PI))) + 0.5) * 0.5
+    ((1 - (f * f * f * f * sin(f * Pi))) + 0.5) * 0.5
 
 proc elasticOut*(t: SomeFloat): SomeFloat {.inline.} =
   sin(-13 * half_pi * (t + 1)) * pow(2, -10 * t) + 1

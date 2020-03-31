@@ -195,95 +195,105 @@ const backward* = ## \
 
 # Common operations
 
-proc rand*(o: var SomeVec, range = 0f..1f) {.inline.} =
+proc rand*[T: SomeVec](o: var T, range = 0f..1f): var T {.inline.} =
   ## Randomize the components of the vector `o` to be within the range `range`, storing the result
   ## in the output vector `o`.
   for i, _ in o: o[i] = rand(range)
+  result = o
 
 proc rand*[T: SomeVec](t: typedesc[T], range = 0f..1f): T {.inline.} =
   ## Initialize a new vector with its components randomized to be within the range `range`.
   result.rand(range)
 
-proc zero*(o: var SomeVec) {.inline.} =
+proc zero*[T: SomeVec](o: var T): var T {.inline.} =
   ## Set all components of the vector `o` to zero.
   o.fill(0)
+  result = o
 
 proc `~=`*(a, b: SomeVec, tolerance = 1e-5): bool {.inline.} =
   ## Check if the vectors `a` and `b` are approximately equal.
   genComponentWiseBool(`~=`, a, b, tolerance)
 
-proc clamp*[T: SomeVec](o: var T, v: T, range = -Inf.float32 .. Inf.float32) {.inline.} =
+proc clamp*[T: SomeVec](o: var T, v: T, range = -Inf.float32 .. Inf.float32): var T {.inline.} =
   ## Constrain each component of the vector `v` to lie within `range`, storing the result in the
   ## output vector `o`.
   for i, _ in o: o[i] = v[i].clamp(range.a, range.b)
+  result = o
 
 proc clamp*[T: SomeVec](v: T, range = -Inf.float32 .. Inf.float32): T {.inline.} =
   ## Constrain each component of the vector `v` to lie within `range`, storing the result in a
   ## new vector.
   result.clamp(v, range)
 
-proc `+`*[T: SomeVec](o: var T, a, b: T) {.inline.} =
+proc `+`*[T: SomeVec](o: var T, a, b: T): var T {.inline.} =
   ## Component-wise addition of the vectors `a` and `b`, storing the result in the output vector
   ## `o`.
   for i, _ in o: o[i] = a[i] + b[i]
+  result = o
 
 proc `+`*[T: SomeVec](a, b: T): T {.inline.} =
   ## Component-wise addition of the vectors `a` and `b`, storing the result in a new vector.
   result.`+`(a, b)
 
-proc `-`*[T: SomeVec](o: var T, a, b: T) {.inline.} =
+proc `-`*[T: SomeVec](o: var T, a, b: T): var T {.inline.} =
   ## Component-wise subtraction of the vectors `a` and `b`, storing the result in the output vector
   ## `o`.
   for i, _ in o: o[i] = a[i] - b[i]
+  result = o
 
 proc `-`*[T: SomeVec](a, b: T): T {.inline.} =
   ## Component-wise subtraction of the vectors `a` and `b`, storing the result in a new vector.
   result.`-`(a, b)
 
-proc `-`*(o: var SomeVec) {.inline.} =
+proc `-`*[T: SomeVec](o: var T): var T {.inline.} =
   ## Unary subtraction (negation) of the components of the vector `o`, storing the result in the
   ## output vector `o`.
   for i, _ in o: o[i] = -o[i]
+  result = o
 
 proc `-`*[T: SomeVec](v: T): T {.inline.} =
   ## Unary subtraction (negation) of the components of the vector `v`, storing the result in a new
   ## vector.
   result = v
-  result.`-`
+  discard -result
 
-proc `*`*[T: SomeVec](o: var T, a, b: T) {.inline.} =
+proc `*`*[T: SomeVec](o: var T, a, b: T): var T {.inline.} =
   ## Calculate the Hadamard product (component-wise vector multiplication) of vectors `a` and `b`,
   ## storing the result in the output vector `o`.
   for i, _ in o: o[i] = a[i] * b[i]
+  result = o
 
 proc `*`*[T: SomeVec](a, b: T): T {.inline.} =
   ## Calculate the Hadamard product (component-wise vector multiplication) of vectors `a` and `b`,
   ## storing the result in a new vector.
   result.`*`(a, b)
 
-proc `*`*[T: SomeVec](o: var T, v: T, scalar: float32) {.inline.} =
+proc `*`*[T: SomeVec](o: var T, v: T, scalar: float32): var T {.inline.} =
   ## Scale vector `v` by `scalar`, storing the result in the output vector `o`.
   for i, _ in o: o[i] = v[i] * scalar
+  result = o
 
 proc `*`*[T: SomeVec](v: T, scalar: float32): T {.inline.} =
   ## Scale vector `v` by `scalar`, storing the result in a new vector.
   result.`*`(v, scalar)
 
-proc `/`*[T: SomeVec](o: var T, a, b: T) {.inline.} =
+proc `/`*[T: SomeVec](o: var T, a, b: T): var T {.inline.} =
   ## Calculate the Hadamard quotient (component-wise vector division) of vectors `a` and `b`,
   ## storing the result in the output vector `o`.
   for i, _ in o: o[i] = if b[i] == 0: 0.0 else: a[i] / b[i]
+  result = o
 
 proc `/`*[T: SomeVec](a, b: T): T {.inline.} =
   ## Calculate the Hadamard quotient (component-wise vector division) of vectors `a` and `b`,
   ## storing the result in a new vector.
   result.`/`(a, b)
 
-proc `/`*[T: SomeVec](o: var T, v: T, scalar: float32) {.inline.} =
+proc `/`*[T: SomeVec](o: var T, v: T, scalar: float32): var T {.inline.} =
   ## Scale vector `v` by the inverse of `scalar`, storing the result in the the output vector `o`.
   ##
   ## **Note**: If `scalar` is zero, the result will be zero rather than undefined.
   for i, _ in o: o[i] = if scalar == 0: 0.0 else: v[i] / scalar
+  result = o
 
 proc `/`*[T: SomeVec](v: T, scalar: float32): T {.inline.} =
   ## Scale vector `v` by the inverse of `scalar`, storing the result in a new vector.
@@ -291,10 +301,11 @@ proc `/`*[T: SomeVec](v: T, scalar: float32): T {.inline.} =
   ## **Note**: If `scalar` is zero, the result will be zero rather than undefined.
   result.`/`(v, scalar)
 
-proc `^`*[T: SomeVec](o: var T, v: T, power: float32) {.inline.} =
+proc `^`*[T: SomeVec](o: var T, v: T, power: float32): var T {.inline.} =
   ## Raise each component of vector `v` to the power of `power`, storing the result in the output
   ## vector `o`.
   for i, _ in o: o[i] = v[i].pow(power)
+  result = o
 
 proc `^`*[T: SomeVec](v: T, power: float32): T {.inline.} =
   ## Raise each component of vector `v` to the power of `power`, storing the result in a new vector.
@@ -312,12 +323,13 @@ proc `<=`*(a, b: SomeVec): bool {.inline.} =
   ## **Note**: The system-defined template will allow `>=` to be used as well.
   genComponentWiseBool(`<=`, a, b)
 
-proc sign*[T: SomeVec](o: var T, v: T) {.inline.} =
+proc sign*[T: SomeVec](o: var T, v: T): var T {.inline.} =
   ## Extract the sign of each component of vector `v`, storing the result in the output vector `o`.
   ##
   ## Each component becomes `-1` if it is less than zero, `0` if it is equal to zero, or `1` if it
   ## is greater than zero.
   for i, _ in o: o[i] = v[i].cmp(0).float
+  result = o
 
 proc sign*[T: SomeVec](v: T): T {.inline.} =
   ## Extract the sign of each component of vector `v`, storing the result in a new vector.
@@ -326,10 +338,11 @@ proc sign*[T: SomeVec](v: T): T {.inline.} =
   ## is greater than zero.
   result.sign(v)
 
-proc fract*[T: SomeVec](o: var T, v: T) {.inline.} =
+proc fract*[T: SomeVec](o: var T, v: T): var T {.inline.} =
   ## Compute the fractional part of each component of vector `v`, storing the result in the output
   ## vector `o`.
   for i, _ in o: o[i] = v[i] - v[i].floor
+  result = o
 
 proc fract*[T: SomeVec](v: T): T {.inline.} =
   ## Compute the fractional part of each component of vector `v`, storing the result in a new vector.
@@ -339,12 +352,13 @@ proc dot*(a, b: SomeVec): float32 {.inline.} =
   ## Calculate the dot product of vectors `a` and `b`.
   for i, _ in a: result += a[i] * b[i]
 
-proc sqrt*[T: SomeVec](o: var T, v: T) {.inline.} =
+proc sqrt*[T: SomeVec](o: var T, v: T): var T {.inline.} =
   ## Calculate the square root of each component of vector `v`, storing the result in the output
   ## vector `o`.
   ##
   ## **Note**: If a component is negative, the result will be zero rather than undefined.
   for i, _ in o: o[i] = if v[i] < 0: 0.0 else: v[i].sqrt
+  result = o
 
 proc sqrt*[T: SomeVec](v: T): T {.inline.} =
   ## Calculate the square root of each component of vector `v`, storing the result in a new vector.
@@ -375,165 +389,184 @@ proc dist*(a, b: SomeVec): float32 {.inline.} =
   ## Calculate the distance between vectors `a` and `b`.
   distSq(a, b).sqrt
 
-proc normalize*[T: SomeVec](o: var T, v: T) {.inline.} =
+proc normalize*[T: SomeVec](o: var T, v: T): var T {.inline.} =
   ## Calculate the unit vector in the same direction as vector `v`, storing the result in the output
   ## vector `o`.
   let len = v.len
-  if len != 0: o.`*`(v, 1/len) else: o.zero
+  if len != 0:
+    result = o.`*`(v, 1/len)
+  else:
+    result = o.zero
 
 proc normalize*[T: SomeVec](v: T): T {.inline.} =
   ## Calculate the unit vector in the same direction as vector `v`, storing the result in a new
   ## vector.
   result.normalize(v)
 
-proc round*[T: SomeVec](o: var T, v: T) {.inline.} =
+proc round*[T: SomeVec](o: var T, v: T): var T {.inline.} =
   ## Round each component of vector `v` to the nearest integer, storing the result in the output
   ## vector `o`.
   for i, _ in o: o[i] = v[i].round
+  result = o
 
 proc round*[T: SomeVec](v: T): T {.inline.} =
   ## Round each component of vector `v` to the nearest integer, storing the result in a new vector.
   result.round(v)
 
-proc floor*[T: SomeVec](o: var T, v: T) {.inline.} =
+proc floor*[T: SomeVec](o: var T, v: T): var T {.inline.} =
   ## Maps each component of vector `v` to the greatest integer that is less than or equal to itself,
   ## storing the result in the output vector `o`.
   for i, _ in o: o[i] = v[i].floor
+  result = o
 
 proc floor*[T: SomeVec](v: T): T {.inline.} =
   ## Maps each component of vector `v` to the greatest integer that is less than or equal to itself,
   ## storing the result in a new vector.
   result.floor(v)
 
-proc ceil*[T: SomeVec](o: var T, v: T) {.inline.} =
+proc ceil*[T: SomeVec](o: var T, v: T): var T {.inline.} =
   ## Maps each component of vector `v` to the least integer that is greater than or equal to itself,
   ## storing the result in the output vector `o`.
   for i, _ in o: o[i] = v[i].ceil
+  result = o
 
 proc ceil*[T: SomeVec](v: T): T {.inline.} =
   ## Maps each component of vector `v` to the least integer that is greater than or equal to itself,
   ## storing the result in a new vector.
   result.ceil(v)
 
-proc abs*[T: SomeVec](o: var T, v: T) {.inline.} =
+proc abs*[T: SomeVec](o: var T, v: T): var T {.inline.} =
   ## Calculate the absolute value of each component of vector `v`, storing the result in the output
   ## vector `o`.
   for i, _ in o: o[i] = v[i].abs
+  result = o
 
 proc abs*[T: SomeVec](v: T): T {.inline.} =
   ## Calculate the absolute value of each component of vector `v`, storing the result in a new
   ## vector.
   result.abs(v)
 
-proc min*[T: SomeVec](o: var T, a, b: T) {.inline.} =
+proc min*[T: SomeVec](o: var T, a, b: T): var T {.inline.} =
   ## Retrieve the lesser of each component for vectors `a` and `b`, storing the result in the
   ## output vector `o`.
   for i, _ in o: o[i] = min(a[i], b[i])
+  result = o
 
 proc min*[T: SomeVec](a, b: T): T {.inline.} =
   ## Retrieve the lesser of each component for vectors `a` and `b`, storing the result in a new
   ## vector.
   result.min(a, b)
 
-proc max*[T: SomeVec](o: var T, a, b: T) {.inline.} =
+proc max*[T: SomeVec](o: var T, a, b: T): var T {.inline.} =
   ## Retrieve the greater of each component for vectors `a` and `b`, storing the result in the
   ## output vector `o`.
   for i, _ in o: o[i] = max(a[i], b[i])
+  result = o
 
 proc max*[T: SomeVec](a, b: T): T {.inline.} =
   ## Retrieve the greater of each component for vectors `a` and `b`, storing the result in a new
   ## vector.
   result.max(a, b)
 
-proc `mod`*[T: SomeVec](o: var T, v: T, divisor: float32) {.inline.} =
+proc `mod`*[T: SomeVec](o: var T, v: T, divisor: float32): var T {.inline.} =
   ## Compute the modulus of each component of vector `v` by `divisor`, storing the result in the
   ## output vector `o`.
-  for i, _ in o: o[i] = v[i] mod divisor
+  for i, _ in o: o[i] = floorMod(v[i], divisor)
+  result = o
 
 proc `mod`*[T: SomeVec](v: T, divisor: float32): T {.inline.} =
   ## Compute the modulus of each component of vector `v` by `divisor`, storing the result in a new
   ## vector.
   result.mod(v, divisor)
 
-proc sin*[T: SomeVec](o: var T, v: T) {.inline.} =
+proc sin*[T: SomeVec](o: var T, v: T): var T {.inline.} =
   ## Compute the sine of each component of vector `v`, storing the result in the output vector `o`.
   for i, _ in o: o[i] = v[i].sin
+  result = o
 
 proc sin*[T: SomeVec](v: T): T {.inline.} =
   ## Compute the sine of each component of vector `v`, storing the result in a new vector.
   result.sin(v)
 
-proc cos*[T: SomeVec](o: var T, v: T) {.inline.} =
+proc cos*[T: SomeVec](o: var T, v: T): var T {.inline.} =
   ## Compute the cosine of each component of vector `v`, storing the result in the output vector
   ## `o`.
   for i, _ in o: o[i] = v[i].cos
+  result = o
 
 proc cos*[T: SomeVec](v: T): T {.inline.} =
   ## Compute the cosine of each component of vector `v`, storing the result in a new vector.
   result.cos(v)
 
-proc tan*[T: SomeVec](o: var T, v: T) {.inline.} =
+proc tan*[T: SomeVec](o: var T, v: T): var T {.inline.} =
   ## Compute the tangent of each component of vector `v`, storing the result in the output vector
   ## `o`.
   for i, _ in o: o[i] = v[i].tan
+  result = o
 
 proc tan*[T: SomeVec](v: T): T {.inline.} =
   ## Compute the tangent of each component of vector `v`, storing the result in a new vector.
   result.tan(v)
 
-proc asin*[T: SomeVec](o: var T, v: T) {.inline.} =
+proc asin*[T: SomeVec](o: var T, v: T): var T {.inline.} =
   ## Compute the arcsine of each component of vector `v`, storing the result in the output vector
   ## `o`.
   for i, _ in o: o[i] = v[i].arcsin
+  result = o
 
 proc asin*[T: SomeVec](v: T): T {.inline.} =
   ## Compute the arcsine of each component of vector `v`, storing the result in a new vector.
   result.asin(v)
 
-proc acos*[T: SomeVec](o: var T, v: T) {.inline.} =
+proc acos*[T: SomeVec](o: var T, v: T): var T {.inline.} =
   ## Compute the arccosine of each component of vector `v`, storing the result in the output vector
   ## `o`.
   for i, _ in o: o[i] = v[i].arccos
+  result = o
 
 proc acos*[T: SomeVec](v: T): T {.inline.} =
   ## Compute the arccosine of each component of vector `v`, storing the result in a new vector.
   result.acos(v)
 
-proc atan*[T: SomeVec](o: var T, v: T) {.inline.} =
+proc atan*[T: SomeVec](o: var T, v: T): var T {.inline.} =
   ## Compute the arctangent of each component of vector `v`, storing the result in the output vector
   ## `o`.
   for i, _ in o: o[i] = v[i].arctan
+  result = o
 
 proc atan*[T: SomeVec](v: T): T {.inline.} =
   ## Compute the arctangent of each component of vector `v`, storing the result in a new vector.
   result.atan(v)
 
-proc radians*[T: SomeVec](o: var T, v: T) {.inline.} =
+proc radians*[T: SomeVec](o: var T, v: T): var T {.inline.} =
   ## Convert each component of vector `v` from degrees to radians, storing the result in the output
   ## vector `o`.
-  const degree = PI/180
+  const degree = Pi/180
   for i, _ in o: o[i] = v[i] * degree
+  result = o
 
 proc radians*[T: SomeVec](v: T): T {.inline.} =
   ## Convert each component of vector `v` from degrees to radians, storing the result in a new
   ## vector.
   result.radians(v)
 
-proc degrees*[T: SomeVec](o: var T, v: T) {.inline.} =
+proc degrees*[T: SomeVec](o: var T, v: T): var T {.inline.} =
   ## Convert each component of vector `v` from radians to degrees, storing the result in the output
   ## vector `o`.
-  const radian = 180/PI
+  const radian = 180/Pi
   for i, _ in o: o[i] = v[i] * radian
+  result = o
 
 proc degrees*[T: SomeVec](v: T): T {.inline.} =
   ## Convert each component of vector `v` from radians to degrees, storing the result in a new
   ## vector.
   result.degrees(v)
 
-proc lerp*[T: SomeVec](o: var T, a, b: T, factor: float32) {.inline.} =
+proc lerp*[T: SomeVec](o: var T, a, b: T, factor: float32): var T {.inline.} =
   ## Linearly interpolate between the values of each component in vectors `a` and `b` by `factor`,
   ## storing the result in the output vector `o`.
   for i, _ in o: o[i] = lerp(a[i], b[i], factor)
+  result = o
 
 proc lerp*[T: SomeVec](a, b: T, factor: float32): T {.inline.} =
   ## Linearly interpolate between the values of each component in vectors `a` and `b` by `factor`,
@@ -553,12 +586,13 @@ proc sameDirection*(a, b: Vec2 or Vec3, tolerance = 1e-5): bool {.inline.} =
 
 # 3D vector operations
 
-proc cross*(o: var Vec3, a, b: Vec3) {.inline.} =
+proc cross*[T: Vec3](o: var T, a, b: T): var T {.inline.} =
   ## Calculate the cross product of 3D vectors `a` and `b`, storing the result in the output vector
   ## `o`.
   o.x = (a.y * b.z) - (a.z * b.y)
   o.y = (a.z * b.x) - (a.x * b.z)
   o.z = (a.x * b.y) - (a.y * b.x)
+  result = o
 
 proc cross*(a, b: Vec3): Vec3 {.inline.} =
   ## Calculate the cross product of 3D vectors `a` and `b`, storing the result in a new vector.

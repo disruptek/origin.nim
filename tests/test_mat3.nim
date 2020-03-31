@@ -54,19 +54,14 @@ suite "mat3":
 
   test "rand":
     var a = mat3()
-    a.rand
-    check a.allIt(it >= 0 and it <= 1)
-    a.rand(50f..100f)
-    check a.allIt(it >= 50 and it <= 100)
-    a = Mat3.rand
-    check a.allIt(it >= 0 and it <= 1)
-    a = Mat3.rand(50f..100f)
-    check a.allIt(it >= 50 and it <= 100)
+    check a.rand.allIt(it >= 0 and it <= 1)
+    check a.rand(50f..100f).allIt(it >= 50 and it <= 100)
+    check Mat3.rand.allIt(it >= 0 and it <= 1)
+    check Mat3.rand(50f..100f).allIt(it >= 50 and it <= 100)
 
   test "zero":
     var a = Mat3.rand
-    a.zero
-    check a.allIt(it == 0)
+    check a.zero.allIt(it == 0)
 
   test "~=":
     check mat3() ~= mat3(1e-5)
@@ -79,14 +74,10 @@ suite "mat3":
       c = mat3(0, 0.3, 1, 0.5, 1, 0.1, 0.4, 1, 1)
       d = mat3(-1.5, 0, 0, 0, 0, 0, 0, 0, 0)
       e = mat3(0, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1)
-    a.clamp(b)
-    check a == b
-    a.clamp(b, 0f..1f)
-    check a == c
-    a.clamp(b, -1.5f..0f)
-    check a == d
-    a.clamp(b, 0f..0.1f)
-    check a == e
+    check a.clamp(b) == b
+    check a.clamp(b, 0f..1f) == c
+    check a.clamp(b, -1.5f..0f) == d
+    check a.clamp(b, 0f..0.1f) == e
     check b.clamp == b
     check b.clamp(0f..1f) == c
     check b.clamp(-1.5f..0f) == d
@@ -98,12 +89,9 @@ suite "mat3":
       b = mat3(0.4, -0.8, 0.1, 0.3, 0.2, -0.6, 0.5, 0.9, 1.2)
       c = mat3(0.4, 0.6, -0.1, 0.4, 0.7, 0.9, -0.2, -0.8, 1.3)
       d = mat3(0.8, -0.2, 0, 0.7, 0.9, 0.3, 0.3, 0.1, 2.5)
-    `+`(a, b, c)
-    check a ~= d
-    `+`(a, b, mat3())
-    check a == b
-    `+`(a, mat3(), b)
-    check a == b
+    check `+`(a, b, c) ~= d
+    check `+`(a, b, mat3()) == b
+    check `+`(a, mat3(), b) == b
     check b + c ~= d
     check b + mat3() == b
     check mat3() + b == b
@@ -114,10 +102,8 @@ suite "mat3":
       b = mat3(0.4, -0.8, 0.1, 0.3, 0.2, -0.6, 0.5, 0.9, 1.2)
       c = mat3(0.4, 0.6, -0.1, 0.4, 0.7, 0.9, -0.2, -0.8, 1.3)
       d = mat3(0, -1.4, 0.2, -0.1, -0.5, -1.5, 0.7, 1.7, -0.1)
-    `-`(a, b, c)
-    check a ~= d
-    `-`(a, b, mat3())
-    check a == b
+    check `-`(a, b, c) ~= d
+    check `-`(a, b, mat3()) == b
     check b - c ~= d
     check b - mat3() == b
 
@@ -125,13 +111,12 @@ suite "mat3":
     var a = mat3(0.7, -0.9, -0.1, 0.2, 1.2, 0, 0.4, 2.1, 1.3)
     let b = a
     let c = mat3(-0.7, 0.9, 0.1, -0.2, -1.2, 0, -0.4, -2.1, -1.3)
-    -a
-    check a == c
+    check -a == c
     check -b == c
 
   test "setId":
     var a = Mat3.rand
-    a.setId
+    discard a.setId
     check a.m00 == 1 and a.m10 == 0 and a.m20 == 0
     check a.m01 == 0 and a.m11 == 1 and a.m21 == 0
     check a.m02 == 0 and a.m12 == 0 and a.m22 == 1
@@ -141,17 +126,13 @@ suite "mat3":
     let
       b = mat3(1, 2, 3, 4, 5, 6, 7, 8, 9)
       c = mat3(30, 36, 42, 66, 81, 96, 102, 126, 150)
-      d = mat3(1).rotate(PI/3)
+      d = mat3(1).rotate(Pi/3)
       e = mat3(1).translate(vec2(5, 10))
       f = mat3(1).translate(vec2(10, 20))
-    a.`*`(b, b)
-    check a ~= c
-    a.`*`(b, mat3_id)
-    check a ~= b
-    a.`*`(mat3_id, b)
-    check a ~= b
-    a.`*`(b, d)
-    check not (a ~= d * b)
+    check a.`*`(b, b) ~= c
+    check a.`*`(b, mat3_id) ~= b
+    check a.`*`(mat3_id, b) ~= b
+    check not (a.`*`(b, d) ~= d * b)
     check b * b ~= c
     check mat3_id * b ~= b
     check b * mat3_id ~= b
@@ -162,19 +143,17 @@ suite "mat3":
   test "* (by vec3)":
     var a = vec3()
     let
-      b = mat3(1).rotate(PI/3)
+      b = mat3(1).rotate(Pi/3)
       c = vec3(1, 2, 3)
       d = vec3(-1.2320509, 1.8660254, 3)
-    a.`*`(b, c)
-    check a ~= d
+    check a.`*`(b, c) ~= d
     check b * c ~= d
     check mat3(1) * c ~= c
 
   test "column":
     var a = vec3()
     let b = mat3(1, 2, 3, 4, 5, 6, 7, 8, 9)
-    a.column(b, 1)
-    check a == vec3(4, 5, 6)
+    check a.column(b, 1) == vec3(4, 5, 6)
     check b.column(2) == vec3(7, 8, 9)
 
   test "column=":
@@ -182,7 +161,7 @@ suite "mat3":
     let
       b = mat3()
       c = vec3(1, 2, 3)
-    a.`column=`(b, c, 2)
+    discard a.`column=`(b, c, 2)
     check a.m02 == 1 and a.m12 == 2 and a.m22 == 3
     check b.`column=`(c, 1).column(1) == c
 
@@ -191,17 +170,14 @@ suite "mat3":
     let
       b = mat3(1, 2, 3, 4, 5, 6, 7, 8, 9)
       c = mat3(1, 2, 0, 4, 5, 0, 0, 0, 1)
-    a.copyRotation(b)
-    check a == c
+    check a.copyRotation(b) == c
     check b.copyRotation == c
 
   test "rotation":
     var a = vec2()
-    let b = mat3(1).rotate(PI/3)
-    a.rotation(b, Axis2d.X)
-    check a ~= vec2(0.5, 0.86602545)
-    a.rotation(b, Axis2d.Y)
-    check a ~= vec2(-0.86602545, 0.5)
+    let b = mat3(1).rotate(Pi/3)
+    check a.rotation(b, Axis2d.X) ~= vec2(0.5, 0.86602545)
+    check a.rotation(b, Axis2d.Y) ~= vec2(-0.86602545, 0.5)
     check b.rotation(Axis2d.X) ~= vec2(0.5, 0.86602545)
     check b.rotation(Axis2d.Y) ~= vec2(-0.86602545, 0.5)
 
@@ -210,14 +186,11 @@ suite "mat3":
     let
       b = mat3(1, 0, 0, 0.5, 0.86602545, 0, 0, 0, 1)
       c = mat3(-0.86602545, 0.5, 0, 0, 1, 0, 0, 0, 1)
-    a.`rotation=`(vec2(1, 0), Axis2d.X)
-    check a ~= mat3(1)
+    check a.`rotation=`(vec2(1, 0), Axis2d.X) ~= mat3(1)
     a = mat3(1)
-    a.`rotation=`(vec2(0.5, 0.86602545), Axis2d.Y)
-    check a ~= b
+    check a.`rotation=`(vec2(0.5, 0.86602545), Axis2d.Y) ~= b
     a = mat3(1)
-    a.`rotation=`(vec2(-0.86602545, 0.5), Axis2d.X)
-    check a ~= c
+    check a.`rotation=`(vec2(-0.86602545, 0.5), Axis2d.X) ~= c
     check mat3(1).`rotation=`(vec2(1, 0), Axis2d.X) ~= mat3(1)
     check mat3(1).`rotation=`(vec2(0.5, 0.86602545), Axis2d.Y) ~= b
     check mat3(1).`rotation=`(vec2(-0.86602545, 0.5), Axis2d.X) ~= c
@@ -225,49 +198,44 @@ suite "mat3":
   test "rotate":
     var a = mat3(1)
     let b = mat3(0.5, 0.86602545, 0, -0.86602545, 0.5, 0, 0, 0, 1)
-    a.rotate(mat3_id, PI/3)
-    check a ~= b
-    check mat3_id.rotate(PI/3) ~= b
+    check a.rotate(mat3_id, Pi/3) ~= b
+    check mat3_id.rotate(Pi/3) ~= b
 
   test "normalizeRotation":
     var a = mat3(vec3(2, 0, 0), vec3(0, 3, 0), vec3(0, 0, 1))
     let b = a
-    a.normalizeRotation(a)
-    check a == mat3(1)
+    check a.normalizeRotation(a) == mat3(1)
     check b.normalizeRotation ~= mat3(1)
 
   test "translation":
     var a = vec2()
     let b = mat3(1, 2, 3, 4, 5, 6, 7, 8, 9)
-    a.translation(b)
-    check a ~= vec2(7, 8)
+    check a.translation(b) ~= vec2(7, 8)
     check translation(b) ~= vec2(7, 8)
 
   test "translation=":
     var a = mat3(1)
     let b = mat3(1, 0, 0, 0, 1, 0, 10, 11, 1)
-    a.`translation=`(a, vec2(10, 11))
-    check a ~= b
+    check a.`translation=`(a, vec2(10, 11)) ~= b
     check mat3(1).`translation=`(vec2(10, 11)) ~= b
 
   test "translate":
     var a = mat3()
     let
-      b = mat3(1).rotate(PI/3)
-    a.translate(b, vec2(5, 10))
+      b = mat3(1).rotate(Pi/3)
+    discard a.translate(b, vec2(5, 10))
     check a.translation ~= vec2(5, 10)
     check b.`translation=`(vec2(5, 10)).translation ~= vec2(5, 10)
 
   test "scale (extract)":
     var a = vec2()
     let b = mat3(1, 2, 3, 4, 5, 6, 7, 8, 9)
-    a.scale(b)
-    check a ~= vec2(2.236068, 6.403124)
+    check a.scale(b) ~= vec2(2.236068, 6.403124)
     check scale(b) ~= vec2(2.236068, 6.403124)
 
   test "scale=":
     var a = mat3(1)
-    a.`scale=`(a, vec2(2, 3))
+    discard a.`scale=`(a, vec2(2, 3))
     check a.m00 == 2 and a.m11 == 3
     check mat3(1).`scale=`(vec2(2, 3)).scale ~= vec2(2, 3)
 
@@ -276,8 +244,7 @@ suite "mat3":
     let
       b = mat3(10, 0, 0, 0, 20, 0, 0, 0, 2)
       c = mat3(20, 0, 0, 0, 60, 0, 0, 0, 2)
-    a.scale(b, vec2(2, 3))
-    check a ~= c
+    check a.scale(b, vec2(2, 3)) ~= c
     check b.scale(vec2(2, 3)) ~= c
 
   test "transpose":
@@ -285,14 +252,13 @@ suite "mat3":
     let
       b = mat3(1, 4, 7, 2, 5, 8, 3, 6, 9)
       c = mat3(1, 2, 3, 4, 5, 6, 7, 8, 9)
-    a.transpose(b)
-    check a ~= c
+    check a.transpose(b) ~= c
     check b.transpose ~= c
 
   test "isOrthogonal":
-    check mat3_id.rotate(PI).isOrthogonal
-    check mat3_id.rotate(PI/2).isOrthogonal
-    check mat3_id.rotate(PI/3).isOrthogonal
+    check mat3_id.rotate(Pi).isOrthogonal
+    check mat3_id.rotate(Pi/2).isOrthogonal
+    check mat3_id.rotate(Pi/3).isOrthogonal
 
   test "trace":
     check mat3_zero.trace == 0f
@@ -306,14 +272,12 @@ suite "mat3":
   test "mainDiagonal":
     var a = vec3()
     let b = mat3(1, 2, 3, 4, 5, 6, 7, 8, 9)
-    a.mainDiagonal(b)
-    check a ~= vec3(1, 5, 9)
+    check a.mainDiagonal(b) ~= vec3(1, 5, 9)
     check b.mainDiagonal ~= vec3(1, 5, 9)
 
   test "antiDiagonal":
     var a = vec3()
     let b = mat3(1, 2, 3, 4, 5, 6, 7, 8, 9)
-    a.antiDiagonal(b)
-    check a ~= vec3(7, 5, 3)
+    check a.antiDiagonal(b) ~= vec3(7, 5, 3)
     check b.antiDiagonal ~= vec3(7, 5, 3)
 

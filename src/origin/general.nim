@@ -2,7 +2,7 @@ import vec
 import mat
 import quat
 
-proc unproject*[T: Vec3](o: var T, pt: T, m, p: Mat4, vp: Vec4): T =
+proc unproject*[T: Vec3](o: var T, pt: T, m, p: Mat4, vp: Vec4): var T =
   var tmp = vec4()
   let
     inv_pm = invert(p * m)
@@ -40,16 +40,16 @@ proc linePointDistance*[T: Vec3](linePt1, linePt2, pt: T): float32 =
     intersect = linePlaneIntersect(linePt1, linePt2, pt, dir)
   dist(pt, intersect)
 
-proc velocity*[T: Vec3](o: var T, axis: T, rate: float32) =
-  o.normalize(axis)
+proc velocity*[T: Vec3](o: var T, axis: T, rate: float32): var T =
+  discard o.normalize(axis)
   o.`*`(o, rate)
 
 proc velocity*(axis: Vec3, rate: float32): Vec3 =
   result.velocity(axis, rate)
 
-proc velocityToRotation*(o: var Quat, vel: Vec3, delta: float32) =
+proc velocityToRotation*[T: Quat](o: var T, vel: Vec3, delta: float32): var T =
   let tmp = vel.normalize
-  o.fromAxisAngle(tmp, vel.len * delta)
+  discard o.fromAxisAngle(tmp, vel.len * delta)
   o.normalize(o)
 
 proc velocityToRotation*(vel: Vec3, delta: float32): Quat =

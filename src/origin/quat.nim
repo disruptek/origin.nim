@@ -63,54 +63,64 @@ const quat_id* = ## \
 
 # Operations
 
-proc rand*(o: var Quat, range = 0f..1f) {.inline.} =
+proc rand*[T: Quat](o: var T, range = 0f..1f): var T {.inline.} =
   ## Randomize the components of the quaternion `o` to be within the range `range`, storing the
   ## result in the output quaternion `o`.
   for i, _ in o: o[i] = rand(range)
+  result = o
 
 proc rand*[T: Quat](t: typedesc[T], range = 0f..1f): T {.inline.} =
   ## Initialize a new quaternion with its components randomized to be within the range `range`.
   result.rand(range)
 
-proc zero*(o: var Quat) {.inline.} =
+proc zero*[T: Quat](o: var T): var T {.inline.} =
   ## Set all components of the quaternion `o` to zero.
   o.fill(0)
+  result = o
+
+proc setId*[T: Quat](o: var T): var T {.inline.} =
+  o.fill(0)
+  o.w = 1
+  result = o
 
 proc `~=`*(a, b: Quat, tolerance = 1e-5): bool {.inline.} =
   ## Check if the quaternions `a` and `b` are approximately equal.
   genComponentWiseBool(`~=`, a, b, tolerance)
 
-proc `+`*[T: Quat](o: var T, a, b: T) {.inline.} =
+proc `+`*[T: Quat](o: var T, a, b: T): var T {.inline.} =
   ## Component-wise addition of the quaternions `a` and `b`, storing the result in the output
   ## quaternion `o`.
   for i, _ in o: o[i] = a[i] + b[i]
+  result = o
 
 proc `+`*[T: Quat](a, b: T): T {.inline.} =
   ## Component-wise addition of the quaternions `a` and `b`, storing the result in a new quaternion.
   result.`+`(a, b)
 
-proc `-`*[T: Quat](o: var T, a, b: T) {.inline.} =
+proc `-`*[T: Quat](o: var T, a, b: T): var T {.inline.} =
   ## Component-wise subtraction of the quaternions `a` and `b`, storing the result in the output
   ## quaternion `o`.
   for i, _ in o: o[i] = a[i] - b[i]
+  result = o
 
 proc `-`*[T: Quat](a, b: T): T {.inline.} =
   ## Component-wise subtraction of the quaternions `a` and `b`, storing the result in a new
   ## quaternion.
   result.`-`(a, b)
 
-proc `-`*(o: var Quat) {.inline.} =
+proc `-`*[T: Quat](o: var T): var T {.inline.} =
   ## Unary subtraction (negation) of the components of the quaternion `q`, storing the result in the
   ## output quaternion `o`.
   for i, _ in o: o[i] = -o[i]
+  result = o
 
 proc `-`*[T: Quat](q: T): T {.inline.} =
   ## Unary subtraction (negation) of the components of the quaternion `q`, storing the result in a
   ## new quaternion.
   result = q
-  result.`-`
+  discard -result
 
-proc `*`*[T: Quat](o: var T, a, b: T) {.inline.} =
+proc `*`*[T: Quat](o: var T, a, b: T): var T {.inline.} =
   ## Multiply the quaternions `a` and `b`, storing the result in the output quaternion `o`.
   let
     a = a
@@ -119,34 +129,38 @@ proc `*`*[T: Quat](o: var T, a, b: T) {.inline.} =
   o.x = a.w * b.x + a.x * b.w + a.y * b.z - a.z * b.y
   o.y = a.w * b.y + a.y * b.w + a.z * b.x - a.x * b.z
   o.z = a.w * b.z + a.z * b.w + a.x * b.y - a.y * b.x
+  result = o
 
 proc `*`*[T: Quat](a, b: T): T {.inline.} =
   ## Multiply the quaternions `a` and `b`, storing the result in a new quaternion
   result.`*`(a, b)
 
-proc `*`*[T: Quat](o: var T, q: T, scalar: float32) {.inline.} =
+proc `*`*[T: Quat](o: var T, q: T, scalar: float32): var T {.inline.} =
   ## Scale quaternion `q` by `scalar`, storing the result in the output quaternion `o`.
   for i, _ in o: o[i] = q[i] * scalar
+  result = o
 
 proc `*`*[T: Quat](q: T, scalar: float32): T {.inline.} =
   ## Scale quaternion `o` by `scalar`, storing the result back into quaternion `o`.
   result.`*`(q, scalar)
 
-proc conjugate*[T: Quat](o: var T, q: T) {.inline.} =
+proc conjugate*[T: Quat](o: var T, q: T): var T {.inline.} =
   ## Calculate the conjugate of quaternion `q`, storing the result in the output quaternion `o`.
   o.w = q.w
   o.x = -q.x
   o.y = -q.y
   o.z = -q.z
+  result = o
 
 proc conjugate*[T: Quat](q: T): T {.inline.} =
   ## Calculate the conjugate of quaternion `q`, storing the result in a new quaternion.
   result.conjugate(q)
 
-proc cross*[T: Quat](o: var T, a, b: T) {.inline.} =
+proc cross*[T: Quat](o: var T, a, b: T): var T {.inline.} =
   ## Calculate the cross product of quaternions `a` and `b`, storing the result in the output
   ## quaternion `o`.
-  o.`*`(b * a.conjugate + a * b, 0.5)
+  discard o.`*`(b * a.conjugate + a * b, 0.5)
+  result = o
 
 proc cross*[T: Quat](a, b: T): T {.inline.} =
   ## Calculate the cross product of quaternions `a` and `b`, storing the result in a new quaternion.
@@ -160,10 +174,13 @@ proc len*(q: Quat): float32 {.inline.} =
   ## Calculate the magnitude of quaternion `q`.
   q.lenSq.sqrt
 
-proc normalize*[T: Quat](o: var T, q: T) {.inline.} =
+proc normalize*[T: Quat](o: var T, q: T): var T {.inline.} =
   ## Normalize quaternion `q`, storing the result in the output quaternion `o`.
   let len = q.len
-  if len != 0: o.`*`(q, 1/len)
+  if len != 0:
+    result = o.`*`(q, 1/len)
+  else:
+    result = o.zero
 
 proc normalize*[T: Quat](q: T): T {.inline.} =
   ## Normalize quaternion `q`, storing the result in a new quaternion.
@@ -173,16 +190,16 @@ proc dot*(a, b: Quat): float32 {.inline.} =
   ## Calculate the dot product of quaternions `a` and `b`.
   a.w * b.w + a.x * b.x + a.y * b.y + a.z * b.z
 
-proc inverse*[T: Quat](o: var T, q: T) {.inline.} =
+proc inverse*[T: Quat](o: var T, q: T): var T {.inline.} =
   ## Calculate the inverse of quaternion `q`, storing the result in the output quaternion `o`.
-  o.conjugate(q)
+  discard o.conjugate(q)
   o.`*`(o, 1/q.lenSq)
 
 proc inverse*[T: Quat](q: T): T {.inline.} =
   ## Calculate the inverse of quaternion `q`, storing the result in a new quaternion.
   result.inverse(q)
 
-proc rotate*[T: Quat](o: var T, a, b: T, space = Space.local) {.inline.} =
+proc rotate*[T: Quat](o: var T, a, b: T, space = Space.local): var T {.inline.} =
   ## Rotate quaternion `a` by `b`, storing the result in the output quaternion `o`.
   case space
   of Space.local: o = a * b
@@ -193,7 +210,7 @@ proc rotate*[T: Quat](a, b: T, space = Space.local): T {.inline.} =
   ## Rotate quaternion `a` by `b`, storing the result in a new quaternion.
   result.rotate(a, b, space)
 
-proc rotateEuler*[T: Quat](o: var T, q: T, angle: Vec3, space = Space.local) {.inline.} =
+proc rotateEuler*[T: Quat](o: var T, q: T, angle: Vec3, space = Space.local): var T {.inline.} =
   ## Rotate quaternion `q` by the vector of Euler angles `angle`, storing the result in the output
   ## quaternion `o`.
   let
@@ -211,7 +228,7 @@ proc rotateEuler*[T: Quat](q: T, angle: Vec3, space = Space.local): T {.inline.}
   ## quaternion.
   result.rotateEuler(q, angle, space)
 
-proc toEulerAngle*(o: var Vec3, q: Quat) {.inline.} =
+proc toEulerAngle*[T: Vec3](o: var T, q: Quat): var T {.inline.} =
   ## Convert the quaternion `q` to a 3D vector of Euler angles, storing the result in the output
   ## vector `o`.
   let
@@ -221,14 +238,15 @@ proc toEulerAngle*(o: var Vec3, q: Quat) {.inline.} =
     siny_cosp = (q.w * q.z + q.x * q.y) * 2
     cosy_cosp = 1 - (q.y ^ 2 + q.z ^ 2) * 2
   o.x = arctan2(sinr_cosp, cosr_cosp)
-  o.y = if sin_p.abs >= 1: PI/2 * sin_p.cmp(0).float else: sin_p.arcsin
+  o.y = if sin_p.abs >= 1: Pi/2 * sin_p.cmp(0).float else: sin_p.arcsin
   o.z = arctan2(siny_cosp, cosy_cosp)
+  result = o
 
 proc toEulerAngle*(q: Quat): Vec3 {.inline.} =
   ## Convert the quaternion `q` to a 3D vector of Euler angles, storing the result in a new vector.
   result.toEulerAngle(q)
 
-proc fromAxisAngle*(o: var Quat, axis: Vec3, angle: float32) {.inline.} =
+proc fromAxisAngle*[T: Quat](o: var T, axis: Vec3, angle: float32): var T {.inline.} =
   ## Convert an axis angle from the 3D vector `axis` and `angle`, to a quaternion, storing the
   ## result in the output quaternion `o`.
   let
@@ -239,38 +257,41 @@ proc fromAxisAngle*(o: var Quat, axis: Vec3, angle: float32) {.inline.} =
   o.x = axis.x * s
   o.y = axis.y * s
   o.z = axis.z * s
+  result = o
 
 proc fromAxisAngle*(axis: Vec3, angle: float32): Quat {.inline.} =
   ## Convert an axis angle from the 3D vector `axis` and `angle`, to a quaternion, storing the
   ## result in the output quaternion `o`.
   result.fromAxisAngle(axis, angle)
 
-proc toVec3*(o: var Vec3, q: Quat) {.inline.} =
+proc toVec3*[T: Vec3](o: var T, q: Quat): var T {.inline.} =
   ## Extract the imaginary part of the quaternion `q` into a 3D vector, storing the result in the
   ## output vector `o`.
   o.x = q.x
   o.y = q.y
   o.z = q.z
+  result = o
 
 proc toVec3*(q: Quat): Vec3 {.inline.} =
   ## Extract the imaginary part of the quaternion `q` into a 3D vector, storing the result in a new
   ## vector.
   result.toVec3(q)
 
-proc toVec4*(o: var Vec4, q: Quat) {.inline.} =
+proc toVec4*[T: Vec4](o: var T, q: Quat): var T {.inline.} =
   ## Extract the components of the quaternion `q` into a 4D vector, storing the result in the output
   ## vector `o`.
   o.x = q.w
   o.y = q.x
   o.z = q.y
   o.w = q.z
+  result = o
 
 proc toVec4*(q: Quat): Vec4 {.inline.} =
   ## Extract the components of the quaternion `q` into a 4D vector, storing the result in a new
   ## vector.
   result.toVec4(q)
 
-proc toMat3*(o: var Mat3, q: Quat) {.inline.} =
+proc toMat3*[T: Mat3](o: var T, q: Quat): var T {.inline.} =
   ## Convert the quaternion `q` to a 3x3 rotation matrix, storing the result in the output matrix
   ## `o`.
   let
@@ -288,12 +309,13 @@ proc toMat3*(o: var Mat3, q: Quat) {.inline.} =
   o.m02 = a.z + c.y
   o.m12 = b.z - c.x
   o.m22 = 1 - (a.x + b.x)
+  result = o
 
 proc toMat3*(q: Quat): Mat3 {.inline.} =
   ## Convert the quaternion `q` to a 3x3 rotation matrix, storing the result in a new matrix`.
   result.toMat3(q)
 
-proc toMat4*(o: var Mat4, q: Quat) {.inline.} =
+proc toMat4*[T: Mat4](o: var T, q: Quat): var T {.inline.} =
   ## Convert the quaternion `q` to a 4x4 matrix, storing the result in the output matrix `o`.
   let
     tmp = 2 / q.lenSq
@@ -317,12 +339,13 @@ proc toMat4*(o: var Mat4, q: Quat) {.inline.} =
   o.m13 = 0
   o.m23 = 0
   o.m33 = 1
+  result = o
 
 proc toMat4*(q: Quat): Mat4 {.inline.} =
   ## Convert the quaternion `q` to a 4x4 matrix, storing the result in a new matrix.
   result.toMat4(q)
 
-proc fromMat*(o: var Quat, m: Mat3 or Mat4) =
+proc fromMat*[T: Quat](o: var T, m: Mat3 or Mat4): var T =
   ## Convert the 3x3 or 4x4 matrix `m` to a quaternion, storing the result in the output quaternion
   ## `o`.
   let
@@ -367,19 +390,21 @@ proc fromMat*(o: var Quat, m: Mat3 or Mat4) =
     o.x = (n02 + n20) * s
     o.y = (n12 + n21) * s
     o.z = 0.25 / s
+  result = o
 
 proc fromMat*(m: Mat3 or Mat4): Quat {.inline.} =
   ## Convert the 3x3 or 4x4 matrix `m` to a quaternion, storing the result in a new quaternion.
   result.fromMat(m)
 
-proc slerp*[T: Quat](o: var T, a, b: T, factor: float32) =
+proc slerp*[T: Quat](o: var T, a, b: T, factor: float32): var T =
   ## Performs a spherical linear interpolation between the quaternions `a` and `b` by `factor`,
   ## storing the result in the output quaternion `o`.
   var
     dot = dot(a, b)
     b = b
+  result = o
   if dot < 0:
-    -b
+    discard -b
     dot = -dot
   if dot.abs > 0.9995:
     o.w = lerp(a.w, b.w, factor)
@@ -402,12 +427,14 @@ proc slerp*[T: Quat](a, b: T, factor: float32): T {.inline.} =
   ## storing the result in a new quaternion.
   result.slerp(a, b, factor)
 
-proc orient*(o: var Quat, space = Space.local, axes_angles: varargs[(Axis3d, float32)]) {.inline.} =
+proc orient*[T: Quat](o: var T, space = Space.local,
+                      axes_angles: varargs[(Axis3d, float32)]): var T {.inline.} =
   ## Compute a right to left composite rotation of the `axis_angles` specification, storing the
   ## result in the output quaternion `o`.
   var q = quat(1)
   var v = vec3()
-  o.w = 1; o.x = 0; o.y = 0; o.z = 0
+  result = o
+  discard o.setId
   for (axis, angle) in axes_angles:
     case axis
     of Axis3d.X:
@@ -417,7 +444,7 @@ proc orient*(o: var Quat, space = Space.local, axes_angles: varargs[(Axis3d, flo
     of Axis3d.Z:
       v.x = 0; v.y = 0; v.z = 1
     # Make the individual quaternion rotation to represent the axis/angle representation.
-    q.fromAxisAngle(v, angle)
+    discard q.fromAxisAngle(v, angle)
     # Update the accumulating rotation, carefully minding the multiplication order to ensure the
     # final rotation we compute applies in right-to-left order.
     # Note: That means the order for this multiply should be total <- total * current, because
@@ -428,7 +455,7 @@ proc orient*(o: var Quat, space = Space.local, axes_angles: varargs[(Axis3d, flo
     of Space.local: o = q * o
     of Space.world: o = o * q
     # Ensure it is normalized for the next concatenation.
-    o.normalize(o)
+    discard o.normalize(o)
 
 proc orient*(space = Space.local, axes_angles: varargs[(Axis3d, float32)]): Quat {.inline.} =
   ## Compute a right to left composite rotation of the `axis_angles` specification, storing the
