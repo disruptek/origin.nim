@@ -11,11 +11,7 @@ type
   Mat2* = Mat[2]
   Mat3* = Mat[3]
   Mat4* = Mat[4]
-  Axis2d* {.pure.} = enum
-    X, Y
-  Axis3d* {.pure.} = enum
-    X, Y, Z
-  MatrixInvertError* = object of Exception
+  MatrixInvertError* = object of ValueError
 
 proc `$`*[N: static[int]](m: Mat[N]): string =
   ## Prints a matrix readably.

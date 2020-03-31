@@ -5,6 +5,10 @@ type
   Storage*[N: static[int]] = array[N, float32]
   Space* {.pure.} = enum
     local, world
+  Axis2d* {.pure.} = enum
+    X, Y
+  Axis3d* {.pure.} = enum
+    X, Y, Z
 
 proc fmt*(x: float): string =
   x.formatFloat(ffDecimal, 6)
