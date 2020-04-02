@@ -12,7 +12,7 @@ suite "quat":
   test "accessors":
     var a = quat(1, 2, 3, 4)
     check a.w == 1 and a.x == 2 and a.y == 3 and a.z == 4
-    a[0] = 10; a[1] = 11; a[2] = 12; a[3] = 13
+    a.w = 10; a.x = 11; a.y = 12; a.z = 13
     check a.w == 10 and a.x == 11 and a.y == 12 and a.z == 13
 
   test "constructors":
@@ -41,6 +41,11 @@ suite "quat":
   test "zero":
     var a = Quat.rand
     check a.zero.allIt(it == 0)
+
+  test "setId":
+    var a = Quat.rand
+    discard a.setId
+    check a.w == 1 and a.x == 0 and a.y == 0 and a.z == 0
 
   test "~=":
     check quat() ~= quat(1e-5)
